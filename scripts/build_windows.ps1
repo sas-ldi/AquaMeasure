@@ -1,5 +1,5 @@
-﻿param(
-    [string]$Python = "fish-vision\.venv\Scripts\python.exe",
+param(
+    [string]$Python = ".venv\Scripts\python.exe",
     [string]$ReleaseName = "AquaMeasure-Windows-x64-20260908",
     [string]$CpuOverlay = "build\pyinstaller-cpu-overlay",
     [string]$DocumentationPdfDir = "",
@@ -35,10 +35,10 @@ $previousPythonPath = $env:PYTHONPATH
 Push-Location $repo
 try {
     $env:PYTHONPATH = if ($previousPythonPath) {
-        $cpuOverlayPath + [IO.Path]::PathSeparator + $previousPythonPath
+        $cpuOverlayPath + [IO.Path]::PathSeparator + (Join-Path $repo "src") + [IO.Path]::PathSeparator + $previousPythonPath
     }
     else {
-        $cpuOverlayPath
+        $cpuOverlayPath + [IO.Path]::PathSeparator + (Join-Path $repo "src")
     }
     $extras = Join-Path $repo "build\release-extras"
     if (Test-Path -LiteralPath $extras) {
@@ -62,13 +62,13 @@ print(f"Runtime tracking : torch {torch.__version__}, torchvision {torchvision._
     & $pythonPath -c @"
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path('aquameasure-pyside').resolve()))
+sys.path.insert(0, str(Path('src/interface').resolve()))
 import main
 main._prepare_qml_module(main._setup_paths())
 "@
     if ($LASTEXITCODE -ne 0) { throw "Préparation du module QML échouée." }
 
-    & $pythonPath -m PyInstaller --clean --noconfirm aquameasure-windows.spec
+    & $pythonPath -m PyInstaller --clean --noconfirm packaging/aquameasure-windows.spec
     if ($LASTEXITCODE -ne 0) {
         throw "PyInstaller a échoué (code $LASTEXITCODE)."
     }
@@ -96,20 +96,17 @@ main._prepare_qml_module(main._setup_paths())
         "camera_parameters",
         "data\exports",
         "data\media",
-        "fish-vision\data"
+        "annotations\data"
     )) {
         New-Item -ItemType Directory -Force -Path (Join-Path $release $relative) | Out-Null
     }
 
     Copy-Item -LiteralPath (Join-Path $repo "packaging\LISEZ-MOI-WINDOWS.txt") -Destination $release
     $docsDir = Join-Path $release "Documentation"
-    New-Item -ItemType Directory -Force -Path $docsDir | Out-Null
-    foreach ($name in @("AquaMeasure_Manuel_Utilisateur", "AquaMeasure_Guide_Extension_Modeles_Detection")) {
-        Copy-Item -LiteralPath (Join-Path $repo "aquameasure-pyside\docs\word\$name.docx") -Destination $docsDir
-        if ($DocumentationPdfDir) {
-            Copy-Item -LiteralPath (Join-Path $DocumentationPdfDir "$name.pdf") -Destination $docsDir
-        }
-    }
+    $docArgs = @($docsDir)
+    if ($DocumentationPdfDir) { $docArgs += @("--pdf-root", $DocumentationPdfDir) }
+    & $pythonPath (Join-Path $repo "scripts\copy_documentation.py") @docArgs
+    if ($LASTEXITCODE -ne 0) { throw "Copie des manuels échouée." }
     & $pythonPath (Join-Path $repo "scripts\audit_windows_release.py") $release
     if ($LASTEXITCODE -ne 0) { throw "Contrôle du contenu de livraison échoué." }
     $zip = Join-Path $releaseRoot "$ReleaseName.zip"

@@ -1,6 +1,0 @@
-path: C:/Users/lhomm/SAS LHOMME DEVELOPMENT AND INNOVATION/accueil - Drive LDI/1_clients/Pierrick/mesure poisson/test/fish-vision/data/public/fishinv/notebooks/datasets/FishInvSplit
-train: train/images
-val: val/images
-
-names:
-  0: fish

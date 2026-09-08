@@ -1,10 +1,11 @@
-AQUAMEASURE 2026.09.08 — ÉDITION COMPLÈTE WINDOWS CPU
+AQUAMEASURE 2026.09.08 | ÉDITION COMPLÈTE WINDOWS CPU
 
 Décompressez toute l'archive puis ouvrez AquaMeasure.exe. Gardez les fichiers
 et sous-dossiers ensemble. Python n'est pas à installer séparément.
 
-Le dossier Documentation contient le manuel utilisateur et les guides Word.
-Commencez par AquaMeasure_Manuel_Utilisateur.docx.
+Le dossier Documentation contient huit guides classés par thème, en Word et
+en PDF. Son fichier LIRE-MOI.txt donne le sommaire. Commencez par le Manuel
+utilisateur, dans Documentation/PDF/01_Utilisation.
 
 Le paquet contient Fishial (détection et classification), Community Fish
 Detector YOLOv12x et RF-DETR nano/small/medium, MegaFishDetector, les modèles

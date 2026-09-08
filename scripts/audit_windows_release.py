@@ -12,13 +12,13 @@ from prepare_release_models import BUNDLED_FILES
 def audit(folder: Path) -> dict:
     root = folder.resolve()
     manifest = json.loads((root / "models-manifest.json").read_text(encoding="utf-8"))
-    catalog = json.loads((Path(__file__).resolve().parents[1] / "fish_detectors/catalog.json").read_text(encoding="utf-8"))
-    expected = {"fish-vision/models/" + name for name in BUNDLED_FILES}
-    expected.update("fish-vision/models/" + row["filename"] for row in catalog["detectors"]
+    catalog = json.loads((Path(__file__).resolve().parents[1] / "src/fish_detectors/catalog.json").read_text(encoding="utf-8"))
+    expected = {"annotations/models/" + name for name in BUNDLED_FILES}
+    expected.update("annotations/models/" + row["filename"] for row in catalog["detectors"]
                     if row.get("download_url") and not row.get("options", {}).get("archive"))
     listed = {row["path"] for row in manifest["files"]}
     assert listed == expected, f"Manifeste inattendu : {listed ^ expected}"
-    actual = {p.relative_to(root).as_posix() for p in (root / "fish-vision/models").rglob("*")
+    actual = {p.relative_to(root).as_posix() for p in (root / "annotations/models").rglob("*")
               if p.is_file() and p.name != ".gitkeep" and "__pycache__" not in p.parts}
     assert actual == expected, f"Fichiers de modèles inattendus : {actual ^ expected}"
     for row in manifest["files"]:
@@ -37,13 +37,16 @@ def audit(folder: Path) -> dict:
         relative = path.relative_to(root).as_posix()
         if (path.suffix.lower() in {".db", ".sqlite", ".sqlite3", ".mp4", ".mov", ".avi", ".mkv"}
                 or path.name in {"storage.json", "detectors.local.json", "detectors.state.json"}
-                or (relative.startswith(("camera_parameters/", "data/", "fish-vision/data/"))
+                or (relative.startswith(("camera_parameters/", "data/", "annotations/data/"))
                     and path.name != ".gitkeep")):
             forbidden.append(relative)
     assert not forbidden, f"Données de travail dans le paquet : {forbidden}"
-    for name in ("AquaMeasure_Manuel_Utilisateur", "AquaMeasure_Guide_Extension_Modeles_Detection"):
-        assert (root / "Documentation" / (name + ".docx")).is_file(), f"Manuel absent : {name}"
-    assert (root / "aquameasure-pyside/resources/aquameasure.ico").is_file()
+    guides = json.loads((Path(__file__).resolve().parents[1] / "docs/documents.json").read_text(encoding="utf-8"))
+    for guide in guides:
+        for folder, suffix in (("Word", ".docx"), ("PDF", ".pdf")):
+            path = root / "Documentation" / folder / guide["category"] / (guide["stem"] + suffix)
+            assert path.is_file(), f"Manuel absent : {path}"
+    assert (root / "interface/resources/aquameasure.ico").is_file()
     return {"ok": True, "model_files": len(expected), "model_bytes": sum(row["size"] for row in manifest["files"]),
             "working_data_files": forbidden, "edition": manifest["edition"]}
 

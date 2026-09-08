@@ -1,0 +1,257 @@
+{
+  "catalog_version": 2,
+  "updated": "2026-09-03",
+  "comment": "Catalogue des detecteurs poisson. Pour ajouter un modele sans modifier le code, creez camera_parameters/detectors.local.json avec la meme structure ({\"detectors\": [...]}).",
+  "detectors": [
+    {
+      "id": "aquameasure-custom",
+      "label": "AquaMeasure - modele maison (Hub Pro)",
+      "backend": "ultralytics",
+      "family": "yolo",
+      "description": "Modele fine-tune depuis le Hub Pro, quel que soit le rang choisi a l'entrainement (poisson, famille, genre ou espece). Le fichier de poids est ecrase a chaque re-entrainement : le rang et la date reellement utilises sont affiches a cote du modele.",
+      "origin": "Projet AquaMeasure",
+      "license": "Interne",
+      "classes_label": "Classes du rang choisi a l'entrainement",
+      "bundled_paths": [
+        "annotations/models/fish_detect_custom.pt"
+      ],
+      "default_conf": 0.25
+    },
+    {
+      "id": "aquameasure-public",
+      "label": "Secours AquaMeasure - poisson générique",
+      "backend": "ultralytics",
+      "family": "yolo",
+      "description": "Modele generique mono-classe fish. Sert uniquement de secours lorsque le detecteur Fishial n'est pas disponible.",
+      "origin": "Projet AquaMeasure",
+      "license": "Interne",
+      "classes_label": "fish",
+      "bundled_paths": [
+        "annotations/models/fish_detect_public.pt"
+      ],
+      "default_conf": 0.25
+    },
+    {
+      "id": "fishial-detector-v26",
+      "label": "Fishial - détection + classification",
+      "backend": "ultralytics",
+      "family": "yolo",
+      "description": "Chaine Fishial de reference : le detecteur officiel localise les poissons, puis le classifieur Fishial propose une espece pour chaque crop. La proposition reste a valider humainement.",
+      "origin": "Fishial.ai",
+      "homepage": "https://fishial.ai",
+      "license": "CC BY-NC-SA 4.0",
+      "classes_label": "Fish (1 classe) + proposition d'espece Fishial",
+      "bundled_paths": [
+        "annotations/models/detector_v26_n3/model.pt"
+      ],
+      "download_url": "https://storage.googleapis.com/fishial-ml-resources/detector_v26_n3.zip",
+      "filename": "detector_v26_n3/model.pt",
+      "size_bytes": 108000000,
+      "imgsz": 1280,
+      "default_conf": 0.25,
+      "options": {
+        "archive": "zip",
+        "archive_member": "model.pt"
+      }
+    },
+    {
+      "id": "sam3-fish",
+      "label": "Meta SAM 3 - poisson (prompt texte)",
+      "backend": "sam3",
+      "family": "sam3",
+      "description": "Detection open-vocabulary par prompt « fish ». Avantage : pas de reentrainement, utile pour comparer avec YOLO sur vos images. Moteur Transformers, Python 3.10+ et acces Hugging Face personnel (facebook/sam3). Calcul exigeant sur CPU. Les poids se telechargent au premier usage.",
+      "origin": "Meta AI",
+      "homepage": "https://github.com/facebookresearch/sam3",
+      "license": "SAM License",
+      "classes_label": "Prompt : fish",
+      "default_conf": 0.35,
+      "options": {
+        "text_prompt": "fish",
+        "sam_version": "sam3"
+      }
+    },
+    {
+      "id": "sam3-underwater-fish",
+      "label": "Meta SAM 3 - poisson sous-marin",
+      "backend": "sam3",
+      "family": "sam3",
+      "description": "Meme moteur SAM 3 avec le prompt « underwater fish », souvent plus adapte aux sequences aquarium / tunnel.",
+      "origin": "Meta AI",
+      "homepage": "https://github.com/facebookresearch/sam3",
+      "license": "SAM License",
+      "classes_label": "Prompt : underwater fish",
+      "default_conf": 0.35,
+      "options": {
+        "text_prompt": "underwater fish",
+        "sam_version": "sam3"
+      }
+    },
+    {
+      "id": "cfd-yolov12x",
+      "label": "Community Fish Detector 1.00 (YOLOv12x)",
+      "backend": "ultralytics",
+      "family": "yolo",
+      "description": "Detecteur communautaire WildHackers / FathomNet, entraine sur un large agregat de jeux de donnees poisson. Premiere generation, architecture YOLOv12x.",
+      "origin": "WildHackers / FathomNet",
+      "homepage": "https://github.com/filippovarini/community-fish-detector",
+      "license": "Voir depot amont",
+      "classes_label": "fish (1 classe)",
+      "download_url": "https://github.com/filippovarini/community-fish-detector/releases/download/cfd-1.00-yolov12x/cfd-yolov12x-1.00.pt",
+      "filename": "cfd-yolov12x-1.00.pt",
+      "sha256": "0b259afb3dca1d1d7f9d842ebf136884b2e3706b151172b266bb24e07f2b8e98",
+      "size_bytes": 119113078,
+      "imgsz": 1024,
+      "default_conf": 0.6,
+      "options": {
+        "iou": 0.45
+      }
+    },
+    {
+      "id": "cfd-rfdetr-nano",
+      "label": "Community Fish Detector 2026 - RF-DETR nano",
+      "backend": "rfdetr",
+      "family": "rf-detr",
+      "description": "Generation 2026 du CFD, passee de YOLO a RF-DETR. Variante nano 640 px, la plus rapide. Necessite le paquet rfdetr.",
+      "origin": "WildHackers / FathomNet",
+      "homepage": "https://github.com/filippovarini/community-fish-detector",
+      "license": "Voir depot amont",
+      "classes_label": "fish (1 classe)",
+      "download_url": "https://github.com/filippovarini/community-fish-detector/releases/download/2026.07.06-release/cfd-rf-detr-nano-640-2026.02.02.cp-011.20260706-release.pth",
+      "filename": "cfd-rf-detr-nano-640-2026.07.06.pth",
+      "sha256": "e3eac301b778e251c3826eae247cc783e1f2dab3fd71a18de92bf3e8999c6f10",
+      "size_bytes": 122056633,
+      "imgsz": 640,
+      "default_conf": 0.5,
+      "options": {
+        "variant": "nano",
+        "class_name": "fish"
+      }
+    },
+    {
+      "id": "cfd-rfdetr-small",
+      "label": "Community Fish Detector 2026 - RF-DETR small",
+      "backend": "rfdetr",
+      "family": "rf-detr",
+      "description": "Variante small 1024 px : meilleur compromis precision / vitesse du CFD 2026. Necessite le paquet rfdetr.",
+      "origin": "WildHackers / FathomNet",
+      "homepage": "https://github.com/filippovarini/community-fish-detector",
+      "license": "Voir depot amont",
+      "classes_label": "fish (1 classe)",
+      "download_url": "https://github.com/filippovarini/community-fish-detector/releases/download/2026.07.06-release/cfd-rf-detr-small-1024-2026.06.06.cp-016.20260706-release.pth",
+      "filename": "cfd-rf-detr-small-1024-2026.07.06.pth",
+      "sha256": "da078e3cbd7120f5e1880c66723b21e62acad7260adddc4ac7f32fe1468aa49a",
+      "size_bytes": 127327589,
+      "imgsz": 1024,
+      "default_conf": 0.5,
+      "options": {
+        "variant": "small",
+        "class_name": "fish"
+      }
+    },
+    {
+      "id": "cfd-rfdetr-medium",
+      "label": "Community Fish Detector 2026 - RF-DETR medium",
+      "backend": "rfdetr",
+      "family": "rf-detr",
+      "description": "Variante medium 1024 px : la plus precise du CFD 2026, la plus lourde. Necessite le paquet rfdetr.",
+      "origin": "WildHackers / FathomNet",
+      "homepage": "https://github.com/filippovarini/community-fish-detector",
+      "license": "Voir depot amont",
+      "classes_label": "fish (1 classe)",
+      "download_url": "https://github.com/filippovarini/community-fish-detector/releases/download/2026.07.06-release/cfd-rf-detr-medium-1024-2026.03.24.cp-011.20260706-release.pth",
+      "filename": "cfd-rf-detr-medium-1024-2026.07.06.pth",
+      "sha256": "2e94814c7a9318aa2e98e5f6b866ceebe0b5b8f92e6fccb912e7e334a7913911",
+      "size_bytes": 134920337,
+      "imgsz": 1024,
+      "default_conf": 0.5,
+      "options": {
+        "variant": "medium",
+        "class_name": "fish"
+      }
+    },
+    {
+      "id": "megafishdetector-m",
+      "label": "MegaFishDetector v0 (YOLOv5m 1280)",
+      "backend": "yolov5",
+      "family": "yolo",
+      "description": "Detecteur generique « poisson » facon MegaDetector, entraine sur OzFish, DeepFish, FathomNet et NOAA. Le premier chargement telecharge le code YOLOv5 via torch.hub (connexion requise).",
+      "origin": "WARPLab (WHOI) / FathomNet",
+      "homepage": "https://huggingface.co/FathomNet/megafishdetector",
+      "license": "MIT",
+      "classes_label": "fish (1 classe)",
+      "download_url": "https://huggingface.co/FathomNet/megafishdetector/resolve/main/weights/megafishdetector_v0_yolov5m_1280p.pt",
+      "filename": "megafishdetector_v0_yolov5m_1280p.pt",
+      "sha256": "ae46b6916767d1a652eae4b5e955caa99e3b37c0945507b15905428db748e185",
+      "size_bytes": 168279579,
+      "imgsz": 1280,
+      "default_conf": 0.1,
+      "options": {
+        "iou": 0.45
+      }
+    },
+    {
+      "id": "megafishdetector-s",
+      "label": "MegaFishDetector v0 (YOLOv5s 640)",
+      "backend": "yolov5",
+      "family": "yolo",
+      "description": "Version legere du MegaFishDetector (14 Mo). Utile pour un test rapide ou un poste sans GPU.",
+      "origin": "WARPLab (WHOI) / FathomNet",
+      "homepage": "https://huggingface.co/FathomNet/megafishdetector",
+      "license": "MIT",
+      "classes_label": "fish (1 classe)",
+      "download_url": "https://huggingface.co/FathomNet/megafishdetector/resolve/main/weights/megafishdetector_v0_yolov5s_640p.pt",
+      "filename": "megafishdetector_v0_yolov5s_640p.pt",
+      "sha256": "0d80abde5aa4c2fde950fb4fa960d8f04695886e1a40383e248cc4894f3595af",
+      "size_bytes": 14378493,
+      "imgsz": 640,
+      "default_conf": 0.1,
+      "options": {
+        "iou": 0.45
+      }
+    },
+    {
+      "id": "megalodon-2024-yolov11",
+      "label": "Megalodon 2024 (YOLO11x) - animal marin",
+      "backend": "ultralytics",
+      "family": "yolo",
+      "description": "Localisateur mono-classe « animal marin » de MBARI. Ne dit pas quelle espece, mais repere tres bien tout organisme mobile - utile pour ne rien rater sur une sequence.",
+      "origin": "MBARI / FathomNet",
+      "homepage": "https://huggingface.co/FathomNet/megalodon-2024-yolov11",
+      "license": "CC BY 4.0",
+      "classes_label": "animal (1 classe)",
+      "download_url": "https://huggingface.co/FathomNet/megalodon-2024-yolov11/resolve/main/mbari-megalodon-yolo11x.pt",
+      "filename": "mbari-megalodon-yolo11x.pt",
+      "sha256": "27ab91d07fa61d6ae1af9a2c18e29d6b89044254aec7d38b1a4331cbb9b3a450",
+      "size_bytes": 114390802,
+      "imgsz": 640,
+      "default_conf": 0.3
+    },
+    {
+      "id": "mbari-315k-yolov8",
+      "label": "MBARI 315k (YOLOv8) - 499 taxons, filtre poisson",
+      "backend": "ultralytics",
+      "family": "yolo",
+      "description": "Entraine sur 315 000 images marines MBARI/VARS, 499 taxons. Le filtre ne conserve que les taxons de poissons osseux. Oriente eaux profondes de Monterey Bay : a comparer avant usage en milieu recifal.",
+      "origin": "MBARI / FathomNet",
+      "homepage": "https://huggingface.co/FathomNet/MBARI-315k-yolov8",
+      "license": "CC BY 4.0",
+      "classes_label": "499 taxons marins (filtres sur poissons)",
+      "download_url": "https://huggingface.co/FathomNet/MBARI-315k-yolov8/resolve/main/mbari_315k_yolov8.pt",
+      "filename": "mbari_315k_yolov8.pt",
+      "sha256": "16d2d8f066501b58d35125f172a34fa1b51add9eaab25a8ecd6de92932ef775d",
+      "size_bytes": 137709813,
+      "imgsz": 640,
+      "default_conf": 0.25,
+      "fish_classes": [
+        "Actinopterygii",
+        "Anoplogaster",
+        "Anoplopoma",
+        "Antimora",
+        "Macropinna",
+        "Merluccius",
+        "Microstomus",
+        "Sebastes"
+      ]
+    }
+  ]
+}

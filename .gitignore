@@ -1,115 +1,72 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.Python
-*.egg-info/
-dist/
-build/
-release/
-LIVRAISON_CLIENT/
-DEMO_CLIENT/
-# Les distributions et poids se téléchargent ou se compilent hors du dépôt.
-*.exe
-*.dll
-*.msi
-*.pt
-*.pth
-*.onnx
-vendor/yolov5/
-.venv-mac/
-dist-mac/
-
-# Environnements virtuels
+# Environnements et caches
 .venv/
 venv/
 env/
-
-# Données générées par l'app
-camera_parameters/
-/tmp/stereo_calib/
-debug_corners.png
-*.log
-
-# Datasets exportés : artefacts dérivés, immuables et régénérables depuis la
-# base — ils se comptent en centaines de Mo et n'ont rien à faire dans git.
-/data/exports/
-
-# Module QML généré : aquameasure-pyside/main.py::_prepare_qml_module recopie
-# qml/{components,pages,style} dans qml/AquaMeasure/ et régénère qmldir via
-# tools/gen_qmldir.py à CHAQUE démarrage. C'est un miroir, pas une source :
-# le versionner dupliquait chaque fichier QML et provoquait un conflit de
-# fusion par composant modifié. Les sources restent qml/{components,pages,style}.
-aquameasure-pyside/qml/AquaMeasure/
-
-# Ancienne version
-stereo_app.py
-
-# IDE
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+.pytest_cache/
 .vscode/
 .idea/
-*.swp
+.codex/
+.cursor/
+.claude/
 
-# Captures de recette produites par aquameasure-pyside/tools/ : des PNG
-# regenerables a la demande, jamais une source.
-aquameasure-pyside/tools/output/
+# Sorties de compilation et de livraison
+build/
+dist/
+release/
+LIVRAISON_CLIENT/
+DEMO_CLIENT/
+*.exe
+*.dll
+*.msi
+*.pyd
+*.zip
+*.7z
+*.dmg
+*.pkg
+src/vendor/
 
-# Modeles IA telecharges a la demande (catalogue detecteurs)
-aquameasure-pyside/models/
+# Poids et configurations propres au poste
+*.pt
+*.pth
+*.onnx
+*.safetensors
+src/annotations/models/*
+!src/annotations/models/.gitkeep
+!src/annotations/models/fishial_labels.json
+.env
+.env.*
+!.env.example
 detectors.local.json
+detectors.remote.json
 detectors.state.json
 
-# fish-vision ML module
-fish-vision/data/*
-!fish-vision/data/.gitkeep
-fish-vision/data/downloads/
-fish-vision/runs/
-fish-vision/models/*
-!fish-vision/models/.gitkeep
-!fish-vision/models/fishial_labels.json
-fish-vision/.venv/
-
-# Base d'annotations locale : donnees de travail, jamais partagees par git.
-fish_annotations.db
-fish_annotations.db-shm
-fish_annotations.db-wal
-
-# Images materialisees par l'app (vignettes, crops) : regenerables.
-/data/media/
-
-# Brouillons d'outillage local
-.codex/
-
-# Worktrees temporaires des agents Claude Code
-.claude/worktrees/
-
-# Captures de recette, regenerables par les scripts de tools/
-docs/captures/
-
-# Contenu local exclu du dépôt public.
+# Données et vidéos de travail
+camera_parameters/
+data/
+!src/annotations/data/
+src/annotations/data/*
+!src/annotations/data/.gitkeep
 *.db
 *.db-wal
 *.db-shm
 *.sqlite
 *.sqlite3
-*.mov
-*.MOV
 *.mp4
 *.MP4
+*.mov
+*.MOV
 *.avi
 *.AVI
-*.zip
-*.7z
-*.dmg
-*.pkg
-*.safetensors
-.env
-.env.*
-!.env.example
-.cursor/
-Calibrate_videos/
-D2/
-J2/
-synched/
-aquameasure-pyside/docs/images/geometry.json
+*.mkv
+*.log
+src/annotations/runs/
+
+# QML et captures générés
+src/interface/qml/AquaMeasure/
+src/interface/tools/output/
+docs/images/geometry.json
+docs/images/annotated/

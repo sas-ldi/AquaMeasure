@@ -17,7 +17,7 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=..\release
 OutputBaseFilename=AquaMeasure-Setup-20260908
-SetupIconFile=..\aquameasure-pyside\resources\aquameasure.ico
+SetupIconFile=..\src\interface\resources\aquameasure.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -51,12 +51,9 @@ Name: "{userdocs}\AquaMeasure - Donnees\data\media"; Flags: uninsneveruninstall;
 Name: "{group}\AquaMeasure"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; AppUserModelID: "IRD.AquaMeasure"
 Name: "{group}\Dossier des données AquaMeasure"; Filename: "{userdocs}\AquaMeasure - Donnees"
 Name: "{group}\Guide d'installation"; Filename: "{app}\LISEZ-MOI-INSTALLATION.txt"
-#if FileExists(MyAppSource + "\Documentation\AquaMeasure_Manuel_Utilisateur.pdf")
-Name: "{group}\Manuel utilisateur"; Filename: "{app}\Documentation\AquaMeasure_Manuel_Utilisateur.pdf"
-Name: "{group}\Guide des modèles IA"; Filename: "{app}\Documentation\AquaMeasure_Guide_Extension_Modeles_Detection.pdf"
-#else
-Name: "{group}\Manuel utilisateur"; Filename: "{app}\Documentation\AquaMeasure_Manuel_Utilisateur.docx"
-#endif
+Name: "{group}\Documentation"; Filename: "{app}\Documentation"
+Name: "{group}\Manuel utilisateur"; Filename: "{app}\Documentation\PDF\01_Utilisation\AquaMeasure_Manuel_Utilisateur.pdf"
+Name: "{group}\Guide des modèles IA"; Filename: "{app}\Documentation\PDF\01_Utilisation\AquaMeasure_Guide_Extension_Modeles_Detection.pdf"
 Name: "{autodesktop}\AquaMeasure"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; AppUserModelID: "IRD.AquaMeasure"; Tasks: desktopicon
 
 [Run]

@@ -1,18 +1,21 @@
-param([string]$OutputDir = "build\docs-qa")
+param([string]$OutputDir = "docs\pdf")
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent $PSScriptRoot
 $out = [IO.Path]::GetFullPath((Join-Path $repo $OutputDir))
-New-Item -ItemType Directory -Force -Path $out | Out-Null
-# Sous Windows, Word installé fournit le rendu natif lorsque LibreOffice
-# n'est pas disponible. Cette instance n'ouvre que les documents de recette.
+$guides = Get-Content -LiteralPath (Join-Path $repo "docs\documents.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+# Instance Word réservée au rendu ; aucun document utilisateur n'est ouvert.
 $word = New-Object -ComObject Word.Application
 $word.Visible = $false
 $word.DisplayAlerts = 0
+$word.Options.UpdateLinksAtOpen = $false
 try {
-    foreach ($file in Get-ChildItem -LiteralPath (Join-Path $repo "aquameasure-pyside\docs\word") -Filter *.docx) {
-        $document = $word.Documents.Open($file.FullName, $false, $true)
+    foreach ($guide in $guides) {
+        $source = Join-Path $repo ("docs\word\" + $guide.category + "\" + $guide.stem + ".docx")
+        $destination = Join-Path $out $guide.category
+        New-Item -ItemType Directory -Force -Path $destination | Out-Null
+        $document = $word.Documents.Open($source, $false, $true)
         try {
-            $pdf = Join-Path $out ($file.BaseName + ".pdf")
+            $pdf = Join-Path $destination ($guide.stem + ".pdf")
             $document.ExportAsFixedFormat($pdf, 17)
             Write-Output $pdf
         }

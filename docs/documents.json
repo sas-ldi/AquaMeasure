@@ -1,0 +1,58 @@
+[
+  {
+    "source": "MANUEL_UTILISATEUR.md",
+    "category": "01_Utilisation",
+    "stem": "AquaMeasure_Manuel_Utilisateur",
+    "label": "Manuel utilisateur",
+    "purpose": "Sessions, synchronisation, calibration, mesure et suivi"
+  },
+  {
+    "source": "DETECTEURS.md",
+    "category": "01_Utilisation",
+    "stem": "AquaMeasure_Guide_Extension_Modeles_Detection",
+    "label": "Modèles IA",
+    "purpose": "Charger des poids, mettre à jour les modèles et transférer Fishial"
+  },
+  {
+    "source": "methodes/CALIBRATION_STEREO.md",
+    "category": "02_Calibration_et_mesure",
+    "stem": "AquaMeasure_Note_Calibration_Stereo",
+    "label": "Calibration stéréo",
+    "purpose": "Mire, modèle géométrique, scan et contrôles de calibration"
+  },
+  {
+    "source": "methodes/MESURE_STEREO.md",
+    "category": "02_Calibration_et_mesure",
+    "stem": "AquaMeasure_Note_Mesure_Stereo",
+    "label": "Mesure stéréo",
+    "purpose": "Triangulation, disparité, erreurs et vérification des longueurs"
+  },
+  {
+    "source": "GUIDE_DEVELOPPEUR.md",
+    "category": "03_Code_et_donnees",
+    "stem": "AquaMeasure_Guide_Developpeur",
+    "label": "Guide du code",
+    "purpose": "Organisation du projet, contrôleurs, tests et compilation"
+  },
+  {
+    "source": "technique/BASE_DE_DONNEES.md",
+    "category": "03_Code_et_donnees",
+    "stem": "AquaMeasure_Note_Base_De_Donnees",
+    "label": "Base de données",
+    "purpose": "Schéma, coordonnées, observations, pistes et références Fishial"
+  },
+  {
+    "source": "technique/EXPORTS_DATASETS.md",
+    "category": "03_Code_et_donnees",
+    "stem": "AquaMeasure_Note_Exports_Datasets",
+    "label": "Exports et jeux de données",
+    "purpose": "Tables CSV, COCO, événements COCO-VID et formats techniques"
+  },
+  {
+    "source": "evolutions/EVOLUTIONS_2026_09.md",
+    "category": "04_Evolutions",
+    "stem": "AquaMeasure_Evolutions_2026_09",
+    "label": "Évolutions de septembre 2026",
+    "purpose": "Changements de l’interface, du suivi, des exports et du dépôt"
+  }
+]

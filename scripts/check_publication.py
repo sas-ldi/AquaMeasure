@@ -14,16 +14,11 @@ BLOCKED_SUFFIXES = {
 }
 BLOCKED_PREFIXES = (
     "build/", "dist/", "release/", "LIVRAISON_CLIENT/", "DEMO_CLIENT/",
-    ".venv/", "fish-vision/.venv/", "camera_parameters/", "data/",
+    ".venv/", "camera_parameters/", "data/", "src/vendor/",
     "Calibrate_videos/", "D2/", "J2/", "synched/", ".codex/", ".cursor/",
+    "aquameasure-pyside/", "fish-vision/", "logo/",
 )
-DOCS = (
-    "README.md", "CONTRIBUTING.md", "THIRD_PARTY_NOTICES.md",
-    "aquameasure-pyside/docs/LISEZ_MOI.md",
-    "aquameasure-pyside/docs/MANUEL_UTILISATEUR.md",
-    "aquameasure-pyside/docs/DETECTEURS.md",
-    "aquameasure-pyside/docs/GUIDE_DEVELOPPEUR.md",
-)
+DOCS = ("README.md", "CONTRIBUTING.md", "THIRD_PARTY_NOTICES.md")
 TOKEN_PATTERN = re.compile(
     r"(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|"
     r"hf_[A-Za-z0-9]{25,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----)"
@@ -43,9 +38,9 @@ def main() -> int:
             errors.append(f"Fichier local ou binaire : {name}")
         if path.name.startswith(".env") and path.name != ".env.example":
             errors.append(f"Configuration privée : {name}")
-        if name.startswith("fish-vision/data/") and path.name != ".gitkeep":
+        if name.startswith("src/annotations/data/") and path.name != ".gitkeep":
             errors.append(f"Données de travail : {name}")
-        if name.startswith("fish-vision/models/") and path.name not in {".gitkeep", "fishial_labels.json"}:
+        if name.startswith("src/annotations/models/") and path.name not in {".gitkeep", "fishial_labels.json"}:
             errors.append(f"Poids ou bibliothèque locale : {name}")
         if not path.is_file():
             errors.append(f"Fichier absent : {name}")
@@ -61,7 +56,8 @@ def main() -> int:
             errors.append(f"Identifiant d’accès potentiel : {name}")
 
     link_count = 0
-    for name in DOCS:
+    documents = list(DOCS) + [name for name in names if name.startswith("docs/") and name.endswith(".md")]
+    for name in documents:
         doc = ROOT / name
         content = doc.read_text(encoding="utf-8")
         content = re.sub(r"```.*?```", "", content, flags=re.S)

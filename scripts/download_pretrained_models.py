@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Télécharge les modèles IA pré-entraînés (aucun entraînement local).
 
-- YOLO poisson → fish-vision/models/fish_detect_public.pt
-- Fishial 866 espèces → fish-vision/models/fishial_classification_v0.10.2/
+- YOLO poisson → src/annotations/models/fish_detect_public.pt
+- Fishial 866 espèces → src/annotations/models/fishial_classification_v0.10.2/
 """
 
 from __future__ import annotations
@@ -14,8 +14,8 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MODELS = ROOT / "fish-vision" / "models"
-FISHIAL_SCRIPT = ROOT / "fish-vision" / "scripts" / "download_fishial.py"
+MODELS = ROOT / "src/annotations" / "models"
+FISHIAL_SCRIPT = ROOT / "src/annotations" / "scripts" / "download_fishial.py"
 
 # Détecteur officiel Fishial (YOLO26 nano, TorchScript-ready .pt, classe « Fish »).
 # Bien plus précis que le yolo11n public : c'est le détecteur utilisé en production.
@@ -99,7 +99,7 @@ def download_fishial(*, force: bool = False) -> None:
         if fishial_dir.is_dir():
             import shutil
             shutil.rmtree(fishial_dir, ignore_errors=True)
-    subprocess.run(cmd, check=True, cwd=ROOT / "fish-vision")
+    subprocess.run(cmd, check=True, cwd=ROOT / "src/annotations")
 
 
 def verify() -> list[str]:

@@ -1,9 +1,9 @@
-AQUAMEASURE — VERSION DU 8 SEPTEMBRE 2026
+AQUAMEASURE | VERSION DU 8 SEPTEMBRE 2026
 
 INSTALLER
 1. Ouvrez AquaMeasure-Setup-20260908.exe et suivez l'assistant.
 2. Lancez AquaMeasure depuis le menu Démarrer ou le raccourci au logo IRD.
-3. Commencez par le Manuel utilisateur, dans le dossier Manuels/PDF.
+3. Commencez par le Manuel utilisateur, dans Manuels/PDF/01_Utilisation.
 
 Python et les modèles prévus sont déjà inclus. Aucun téléchargement initial
 n'est nécessaire pour Fishial, Community Fish Detector et les autres modèles
@@ -29,11 +29,12 @@ Vérifiez ce chemin dans Édition > Préférences si un autre emplacement est
 souhaité. Conservez aussi les vidéos originales et sauvegardez votre travail.
 
 MANUELS
-Deux guides sont fournis, chacun en PDF pour le lire et en Word pour l'adapter :
-- Manuel utilisateur : session, synchronisation, calibration, mesure, suivi,
-  points d'action et exports.
-- Guide des modèles IA : choisir un modèle, importer des poids et transférer
-  sa bibliothèque Fishial locale vers un autre poste.
+Huit guides sont fournis, en PDF pour les lire et en Word pour les adapter :
+- 01_Utilisation : manuel utilisateur et guide des modèles IA.
+- 02_Calibration_et_mesure : méthode de calibration et calcul des longueurs.
+- 03_Code_et_donnees : code, base de données et formats d'export.
+- 04_Evolutions : changements de septembre 2026.
+Le fichier Manuels/LIRE-MOI.txt décrit le contenu de chaque guide.
 
 SIGNATURE WINDOWS
 L'installateur n'est pas signé numériquement. Windows peut signaler un éditeur

@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$SetupPath = "",
     [string]$ReportPath = "",
     [switch]$KeepArtifacts
@@ -70,7 +70,7 @@ try {
 
     [IO.File]::WriteAllText($storageConfig, (@{data_root = $smokeRoot} | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
     $env:AQUAMEASURE_STORAGE_CONFIG = $storageConfig
-    $env:AQUAMEASURE_MODELS_DIR = Join-Path $installDir "fish-vision\models"
+    $env:AQUAMEASURE_MODELS_DIR = Join-Path $installDir "annotations\models"
     $env:FISH_VISION_DB = $database
     $env:FISH_VISION_SETTINGS = Join-Path $smokeRoot "settings.json"
     $env:HF_HOME = Join-Path $smokeRoot "hf"

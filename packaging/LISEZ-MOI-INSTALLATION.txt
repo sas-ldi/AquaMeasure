@@ -1,4 +1,4 @@
-AQUAMEASURE 2026.09.08 — INSTALLATION WINDOWS
+AQUAMEASURE 2026.09.08 | INSTALLATION WINDOWS
 
 Lancez AquaMeasure-Setup-20260908.exe et suivez l'assistant.
 L'application s'installe par défaut dans :
@@ -16,9 +16,10 @@ changer le dossier, ouvrir Édition > Préférences dans l'application.
 La désinstallation conserve les données utilisateur. Sauvegardez-les avec
 les vidéos originales et la calibration avant de déplacer le travail.
 
-Les guides Word se trouvent dans le dossier Documentation de l'application.
-Le Manuel utilisateur explique le parcours normal ; le Guide extension des
-modèles explique les fichiers YOLO, Community Fish Detector et SAM 3.
+Les huit guides se trouvent dans Documentation/Word et Documentation/PDF,
+classés en quatre catégories : utilisation, calibration et mesure, code et
+données, évolutions. Le sommaire est dans Documentation/LIRE-MOI.txt.
+Commencez par le Manuel utilisateur, dans la catégorie 01_Utilisation.
 
 SAM 3 nécessite un accès Hugging Face personnel pour ses poids. Le moteur est
 présent, mais le paquet ne contient pas de jeton ni de poids à accès contrôlé.

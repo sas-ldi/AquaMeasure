@@ -1,6 +1,6 @@
 """Prépare les poids publics et leur inventaire pour l'installeur complet.
 
-Les poids Fishial extraits doivent déjà se trouver dans fish-vision/models.
+Les poids Fishial extraits doivent déjà se trouver dans src/annotations/models.
 Les autres poids sont téléchargés aux URL du catalogue et contrôlés par SHA-256.
 SAM 3 conserve l'authentification personnelle Hugging Face au premier usage.
 """
@@ -14,7 +14,7 @@ import urllib.request
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-MODELS = ROOT / "fish-vision/models"
+MODELS = ROOT / "src/annotations/models"
 YOLOV5_COMMIT = "35b48237aef6d71ca9de2c5dea345d7536eb7fa7"
 # Liste de livraison explicite : un modèle personnel ou un export Fishial
 # déposé dans models/ ne doit jamais entrer dans un installateur client.
@@ -41,7 +41,7 @@ def sha256(path):
 
 
 def main():
-    entries = json.loads((ROOT / "fish_detectors/catalog.json").read_text(encoding="utf-8"))["detectors"]
+    entries = json.loads((ROOT / "src/fish_detectors/catalog.json").read_text(encoding="utf-8"))["detectors"]
     for entry in entries:
         if not entry.get("download_url") or entry.get("options", {}).get("archive"):
             continue
@@ -56,7 +56,7 @@ def main():
         if sha256(target) != entry["sha256"]:
             raise RuntimeError("SHA-256 incorrect : " + entry["id"])
 
-    vendor = ROOT / "vendor/yolov5"
+    vendor = ROOT / "src/vendor/yolov5"
     if not (vendor / "hubconf.py").is_file():
         print("Code YOLOv5 : " + YOLOV5_COMMIT, flush=True)
         url = f"https://codeload.github.com/ultralytics/yolov5/zip/{YOLOV5_COMMIT}"
@@ -79,7 +79,7 @@ def main():
         path.relative_to(MODELS.resolve())
         if not path.is_file():
             raise FileNotFoundError(path)
-        files.append({"path": path.relative_to(ROOT).as_posix(), "size": path.stat().st_size,
+        files.append({"path": path.relative_to(ROOT / "src").as_posix(), "size": path.stat().st_size,
                       "sha256": sha256(path)})
     manifest = {"edition": "2026.09.08 complète CPU", "files": files,
                 "yolov5_commit": YOLOV5_COMMIT,

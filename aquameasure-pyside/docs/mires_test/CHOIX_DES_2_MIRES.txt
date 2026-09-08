@@ -1,9 +1,0 @@
-Choix des 2 mires ChArUco (test calibration stéréo)
-
-Mire A — A3, 5×7, carré 50 mm
-Référence actuelle du banc : gros carreaux pour une bonne détection des marqueurs ArUco à distance (~1–2 m). Format A3 simple à produire et à manipuler. Limite : la mire couvre une partie réduite du champ des caméras ; il faut la déplacer beaucoup pour varier les poses.
-
-Mire B — 840 mm, 20×7, carré 39 mm
-Mire étendue en largeur : carreaux un peu plus petits qu’en 50 mm, mais surface beaucoup plus grande → plus de coins visibles d’un coup et meilleure couverture du champ (centre et bords du bassin). Sert à tester si ce gain de couverture améliore la calibration stéréo malgré des marqueurs légèrement plus petits en mm.
-
-Protocole : même session vidéo de calibration avec les deux mires ; comparer RMSE mono/stéréo et facilité de détection. La mire retenue sera celle qui combine la meilleure précision et la praticité sur le terrain.

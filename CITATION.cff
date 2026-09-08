@@ -5,8 +5,8 @@ title: AquaMeasure
 abstract: "Mesure stéréoscopique de poissons et annotation de comportements sur vidéos sous-marines."
 authors:
   - name: "Contributeurs AquaMeasure, projet ARMS Resilience"
-repository-code: "https://github.com/sas-ldi/AquaMeasure-"
-url: "https://github.com/sas-ldi/AquaMeasure-"
+repository-code: "https://github.com/sas-ldi/AquaMeasure"
+url: "https://github.com/sas-ldi/AquaMeasure"
 version: "2026.09.08"
 date-released: 2026-09-08
 keywords:

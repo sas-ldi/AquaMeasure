@@ -1,6 +1,6 @@
 # Contribuer
 
-Pour signaler un problème, ouvrir une [issue](https://github.com/sas-ldi/AquaMeasure-/issues) avec les étapes pour le reproduire, la version de l’application et le système utilisé. Une capture ou un court extrait autorisé aide à comprendre le cas.
+Pour signaler un problème, ouvrir une [issue](https://github.com/sas-ldi/AquaMeasure/issues) avec les étapes pour le reproduire, la version de l’application et le système utilisé. Une capture ou un court extrait autorisé aide à comprendre le cas.
 
 Pour proposer une correction :
 

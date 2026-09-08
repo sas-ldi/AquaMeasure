@@ -62,7 +62,7 @@ Les mires se génèrent dans la page Calibration, avec les dimensions du montage
 Sous Windows, avec Git et Python 3.11 installés :
 
 ```powershell
-git clone https://github.com/sas-ldi/AquaMeasure-.git AquaMeasure
+git clone https://github.com/sas-ldi/AquaMeasure.git AquaMeasure
 cd AquaMeasure
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
@@ -81,4 +81,4 @@ Le code propre à AquaMeasure est mis à disposition pour un **usage non commerc
 
 Les bibliothèques et modèles tiers gardent leurs licences, notamment l’AGPL d’Ultralytics. La licence AquaMeasure ne remplace pas leurs conditions ; la redistribution d’une application qui les intègre doit respecter ces conditions. Voir les [licences des composants](THIRD_PARTY_NOTICES.md).
 
-Projet **ARMS Resilience**, IRD / UMR MARBEC. Pour citer le logiciel : [CITATION.cff](CITATION.cff). Pour signaler un problème : [Issues](https://github.com/sas-ldi/AquaMeasure-/issues).
+Projet **ARMS Resilience**, IRD / UMR MARBEC. Pour citer le logiciel : [CITATION.cff](CITATION.cff). Pour signaler un problème : [Issues](https://github.com/sas-ldi/AquaMeasure/issues).

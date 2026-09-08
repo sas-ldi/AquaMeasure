@@ -45,7 +45,7 @@ def inline(p, text):
             if not parts.scheme and not parts.netloc:
                 local = (CURRENT_SOURCE.parent / parts.path).resolve()
                 relative = local.relative_to(HERE.parent).as_posix()
-                target = "https://github.com/sas-ldi/AquaMeasure-/blob/main/" + quote(relative)
+                target = "https://github.com/sas-ldi/AquaMeasure/blob/main/" + quote(relative)
                 if parts.fragment:
                     target += "#" + parts.fragment
             link.set(qn("r:id"), p.part.relate_to(target, RT.HYPERLINK, is_external=True))

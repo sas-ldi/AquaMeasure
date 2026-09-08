@@ -1,0 +1,120 @@
+AquaMeasure - Licence d'utilisation non commerciale
+Copyright (c) 2026 IRD — Institut de recherche pour le développement,
+UMR MARBEC, et les contributeurs du projet ARMS Resilience.
+
+Développé dans le cadre du projet ARMS Resilience (Belmont Forum CEH2,
+2025–2029).
+
+================================================================================
+FRANÇAIS - Licence AquaMeasure, usage non commercial
+================================================================================
+
+L'autorisation est accordée, gracieusement, à toute personne obtenant une copie
+de ce logiciel et des fichiers de documentation associés (le « Logiciel »),
+d'utiliser le Logiciel aux fins autorisées ci-dessous, notamment les droits
+d'utiliser, copier, modifier, fusionner, publier et distribuer des copies du
+Logiciel, et de permettre aux personnes auxquelles le Logiciel est fourni de le
+faire, sous réserve des conditions suivantes :
+
+1. ATTRIBUTION
+   L'avis de copyright ci-dessus et le présent avis de permission doivent être
+   inclus dans toutes les copies ou parties substantielles du Logiciel.
+   Toute publication scientifique reposant sur le Logiciel doit le citer ainsi
+   que le projet ARMS Resilience.
+
+2. RESTRICTION D'USAGE NON COMMERCIAL
+   L'usage commercial du Logiciel est interdit sans autorisation écrite
+   préalable des titulaires du copyright.
+
+   Est réputé commercial tout usage principalement destiné à procurer un
+   avantage commercial ou une compensation monétaire, notamment :
+     - la vente, la location ou la sous-licence du Logiciel ou d'une œuvre
+       dérivée ;
+     - son intégration dans un produit ou un service payant ;
+     - la fourniture de prestations rémunérées reposant sur le Logiciel.
+
+   Ne sont PAS réputés commerciaux :
+     - la recherche scientifique, publique ou privée, y compris financée ;
+     - l'enseignement et la formation ;
+     - l'usage par des institutions publiques, des organisations non
+       gouvernementales et des associations à but non lucratif ;
+     - l'usage personnel et l'évaluation.
+
+3. ABSENCE DE GARANTIE
+   LE LOGICIEL EST FOURNI « EN L'ÉTAT », SANS GARANTIE D'AUCUNE SORTE, EXPRESSE
+   OU IMPLICITE, Y COMPRIS MAIS SANS S'Y LIMITER LES GARANTIES DE QUALITÉ
+   MARCHANDE, D'ADÉQUATION À UN USAGE PARTICULIER ET D'ABSENCE DE CONTREFAÇON.
+   EN AUCUN CAS LES AUTEURS OU TITULAIRES DU COPYRIGHT NE POURRONT ÊTRE TENUS
+   RESPONSABLES DE TOUTE RÉCLAMATION, DOMMAGE OU AUTRE RESPONSABILITÉ, QUE CE
+   SOIT DANS LE CADRE D'UN CONTRAT, D'UN DÉLIT OU AUTRE, DÉCOULANT DU LOGICIEL,
+   DE SON UTILISATION OU DE TOUTE AUTRE MANIPULATION DE CELUI-CI.
+
+   Cette clause s'applique en particulier aux mesures produites par le
+   Logiciel : il appartient à l'utilisateur de valider sa chaîne de mesure
+   avant toute exploitation scientifique.
+
+================================================================================
+ENGLISH - AquaMeasure Noncommercial License
+================================================================================
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software for the purposes permitted below, including the rights to
+use, copy, modify, merge, publish and distribute copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to the
+following conditions:
+
+1. ATTRIBUTION
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software. Any scientific
+   publication relying on the Software shall cite it together with the ARMS
+   Resilience project.
+
+2. NON-COMMERCIAL RESTRICTION
+   Commercial use of the Software is prohibited without prior written
+   permission from the copyright holders.
+
+   Commercial use means any use primarily intended for commercial advantage or
+   monetary compensation, including selling, renting or sub-licensing the
+   Software or a derivative work, embedding it in a paid product or service, or
+   providing paid services based on it.
+
+   The following are NOT considered commercial use: scientific research, whether
+   publicly or privately funded; teaching and training; use by public
+   institutions, non-governmental organisations and non-profit bodies; personal
+   use and evaluation.
+
+3. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+   THE SOFTWARE.
+
+================================================================================
+
+PÉRIMÈTRE / SCOPE
+
+La présente licence porte sur le code et la documentation propres à
+AquaMeasure. Les composants tiers, les poids de modèles et les données
+provenant d'autres projets conservent les licences de leurs auteurs. Les
+marques et logos restent la propriété de leurs titulaires. Voir
+THIRD_PARTY_NOTICES.md pour les références et les conditions des intégrations.
+
+Cette licence n'autorise pas l'ajout d'une restriction non commerciale à une
+œuvre couverte par l'AGPL. Une distribution combinée doit être autorisée par
+les licences de tous les composants qui la constituent.
+
+This license covers AquaMeasure's own code and documentation. Third-party
+components, model weights, and data from other projects retain their respective
+licenses. Trademarks and logos remain the property of their owners. See
+THIRD_PARTY_NOTICES.md for references and integration terms.
+
+This license does not permit adding a noncommercial restriction to a work
+covered by the AGPL. A combined distribution must be permitted under the
+licenses of all its components.
+
+Projet ARMS Resilience — IRD / UMR MARBEC
+https://thomaslamy.com/projects/2025-ARMS_resilience/

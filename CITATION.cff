@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "Pour une publication utilisant AquaMeasure, citer le logiciel et le projet ARMS Resilience."
+type: software
+title: AquaMeasure
+abstract: "Mesure stéréoscopique de poissons et annotation de comportements sur vidéos sous-marines."
+authors:
+  - name: "Contributeurs AquaMeasure, projet ARMS Resilience"
+repository-code: "https://github.com/sas-ldi/AquaMeasure-"
+url: "https://github.com/sas-ldi/AquaMeasure-"
+version: "2026.09.08"
+date-released: 2026-09-08
+keywords:
+  - stereo-video
+  - fish-measurement
+  - marine-ecology
+  - behavior-annotation

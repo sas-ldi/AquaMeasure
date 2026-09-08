@@ -1,0 +1,42 @@
+AQUAMEASURE — VERSION DU 8 SEPTEMBRE 2026
+
+INSTALLER
+1. Ouvrez AquaMeasure-Setup-20260908.exe et suivez l'assistant.
+2. Lancez AquaMeasure depuis le menu Démarrer ou le raccourci au logo IRD.
+3. Commencez par le Manuel utilisateur, dans le dossier Manuels/PDF.
+
+Python et les modèles prévus sont déjà inclus. Aucun téléchargement initial
+n'est nécessaire pour Fishial, Community Fish Detector et les autres modèles
+fournis. Choisissez le modèle dans Mesure > Détection IA. Un seul est utilisé
+à la fois. Cette édition fonctionne sur le processeur, sans exiger de GPU.
+
+CONTENU
+- Fishial : détection, classification et catalogue de 2 438 espèces.
+- Community Fish Detector : poids YOLOv12x et RF-DETR nano, small et medium.
+- MegaFishDetector, modèles MBARI du catalogue et modèles de secours.
+- Suivi de trajectoire, événements et points d'action sur les pistes.
+- Moteur SAM 3 : ses poids demandent un accès Hugging Face personnel.
+
+L'installation démarre sans vidéos, observations, mesures, calibrations ni
+références Fishial personnelles. Les noms d'espèces sont disponibles ; cela
+ne signifie pas que le classifieur sait déjà reconnaître chaque espèce.
+
+RETROUVER SON TRAVAIL
+Sur un nouveau poste, le dossier de données est :
+  Documents\AquaMeasure - Donnees
+Les exports se trouvent dans son sous-dossier data\exports.
+Vérifiez ce chemin dans Édition > Préférences si un autre emplacement est
+souhaité. Conservez aussi les vidéos originales et sauvegardez votre travail.
+
+MANUELS
+Deux guides sont fournis, chacun en PDF pour le lire et en Word pour l'adapter :
+- Manuel utilisateur : session, synchronisation, calibration, mesure, suivi,
+  points d'action et exports.
+- Guide des modèles IA : choisir un modèle, importer des poids et transférer
+  sa bibliothèque Fishial locale vers un autre poste.
+
+SIGNATURE WINDOWS
+L'installateur n'est pas signé numériquement. Windows peut signaler un éditeur
+non vérifié ; selon la politique du poste, une intervention du service
+informatique peut être nécessaire. Le fichier SHA256.txt donne les empreintes
+des fichiers livrés. Une empreinte ne remplace pas une signature d'éditeur.

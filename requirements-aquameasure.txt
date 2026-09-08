@@ -1,0 +1,12 @@
+# AquaMeasure Python — runtime
+opencv-python>=4.8
+numpy>=1.24
+scipy>=1.10
+PyQt6>=6.5
+
+# IA poisson (YOLO + classification Fishial)
+ultralytics>=8.3.0
+torch>=2.0
+
+# Build macOS (.app PyInstaller)
+pyinstaller>=6.3

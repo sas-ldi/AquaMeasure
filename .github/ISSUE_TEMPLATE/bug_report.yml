@@ -1,0 +1,23 @@
+name: Signaler un problème
+description: Un problème de mesure, de suivi, d’export ou d’interface.
+title: "[Problème] "
+body:
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Que s’est-il passé ?
+      description: Indiquer les étapes, le résultat attendu et le résultat obtenu.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Version et système
+      placeholder: AquaMeasure 2026.09.08, Windows 11, lancement depuis les sources
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Capture ou message d’erreur
+      description: Retirer les informations personnelles et les jetons d’accès avant de joindre un fichier.

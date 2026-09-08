@@ -1,0 +1,13 @@
+# Mapping CVAT label names -> taxon_node_id in fish_annotations.db
+# Use fixed IDs from db/seed_taxonomy.sql or query DB after adding species.
+
+mapping:
+  fish: taxon-fish-generic
+  Fish: taxon-fish-generic
+  poisson: taxon-fish-generic
+  Acanthuridae: taxon-fam-acanthuridae
+  Acanthurus: taxon-gen-acanthurus
+  Ctenochaetus: taxon-gen-ctenochaetus
+  Zebrasoma: taxon-gen-zebrasoma
+  "Acanthurus sp.": taxon-sp-unknown-acanthurus
+  "Ctenochaetus sp.": taxon-sp-unknown-ctenochaetus

@@ -1,0 +1,13 @@
+path: C:/Users/lhomm/SAS LHOMME DEVELOPMENT AND INNOVATION/accueil - Drive LDI/1_clients/Pierrick/mesure poisson/test/fish-vision/data/public/fish_families
+train: train/images
+val: val/images
+
+names:
+  0: fish
+  1: Chaetodontidae
+  2: Haemulidae
+  3: Labridae
+  4: Lutjanidae
+  5: Muraenidae
+  6: Scaridae
+  7: Serranidae

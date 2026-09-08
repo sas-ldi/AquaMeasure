@@ -1,0 +1,29 @@
+# Moteurs de detection optionnels - a installer seulement si vous voulez
+# essayer les modeles correspondants (voir docs/DETECTEURS.md).
+#
+# Rien n'oblige a passer par ce fichier : le gestionnaire de modeles
+# (« Gerer les modeles… ») installe chaque moteur d'un bouton, avec
+# l'interpreteur de l'application. C'est la voie recommandee, parce qu'un
+# `pip install` tape dans un terminal vise souvent un autre Python que celui
+# du venv - le paquet arrive, et le moteur reste porte comme absent.
+
+# Meta SAM 3 - detection par prompt texte, sans reentrainement.
+# transformers implemente SAM 3 nativement : c'est la seule dependance, et
+# elle tourne des Python 3.10. Le paquet `sam3` de Meta reste accepte s'il est
+# deja installe, mais il n'apporte rien de plus.
+#
+# Il reste une etape que l'installation ne remplace pas : `facebook/sam3` est
+# un depot a acces controle. Demander l'acces sur
+# https://huggingface.co/facebook/sam3, creer un jeton, puis le coller dans le
+# gestionnaire de modeles (carte « Acces Hugging Face ») ou lancer
+# `hf auth login`.
+transformers>=5.0
+
+# Community Fish Detector 2026 (RF-DETR nano / small / medium)
+rfdetr>=1.0
+
+# MegaFishDetector v0 - poids YOLOv5 d'origine charges via torch.hub
+pandas>=2.0
+seaborn>=0.13
+psutil>=5.9
+requests>=2.31

@@ -1,0 +1,31 @@
+AQUAMEASURE 2026.09.08 — INSTALLATION WINDOWS
+
+Lancez AquaMeasure-Setup-20260908.exe et suivez l'assistant.
+L'application s'installe par défaut dans :
+  %LOCALAPPDATA%\Programs\AquaMeasure
+
+Le menu Démarrer propose l'application et sa documentation. Le raccourci sur
+le Bureau est facultatif. Python, les moteurs et les poids publics prévus
+sont inclus. Voir LISEZ-MOI-WINDOWS.txt pour le détail des modèles.
+
+Sur un nouveau poste, le dossier de données proposé est :
+  Documents\AquaMeasure - Donnees
+
+Une configuration de stockage existante est conservée. Pour vérifier ou
+changer le dossier, ouvrir Édition > Préférences dans l'application.
+La désinstallation conserve les données utilisateur. Sauvegardez-les avec
+les vidéos originales et la calibration avant de déplacer le travail.
+
+Les guides Word se trouvent dans le dossier Documentation de l'application.
+Le Manuel utilisateur explique le parcours normal ; le Guide extension des
+modèles explique les fichiers YOLO, Community Fish Detector et SAM 3.
+
+SAM 3 nécessite un accès Hugging Face personnel pour ses poids. Le moteur est
+présent, mais le paquet ne contient pas de jeton ni de poids à accès contrôlé.
+
+L'installation démarre avec un catalogue de 2 438 espèces et sans données
+de démonstration. Les modèles fournis fonctionnent sans téléchargement initial.
+
+Cet installateur n'est pas signé numériquement. Windows peut afficher un
+avertissement indiquant que l'éditeur n'est pas vérifié. L'empreinte SHA-256
+jointe permet de comparer le fichier reçu ; elle ne remplace pas une signature.

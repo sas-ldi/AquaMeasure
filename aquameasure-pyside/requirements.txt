@@ -1,0 +1,12 @@
+PySide6>=6.6
+opencv-python>=4.8
+numpy>=1.24
+scipy>=1.11
+sqlalchemy>=2.0
+pyyaml>=6.0
+pyserial>=3.5
+
+# Detection — moteurs par defaut (voir docs/DETECTEURS.md)
+ultralytics>=8.3.0
+torch>=2.0
+onnxruntime>=1.17

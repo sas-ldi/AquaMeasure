@@ -1,0 +1,37 @@
+AQUAMEASURE 2026.09.08 — ÉDITION COMPLÈTE WINDOWS CPU
+
+Décompressez toute l'archive puis ouvrez AquaMeasure.exe. Gardez les fichiers
+et sous-dossiers ensemble. Python n'est pas à installer séparément.
+
+Le dossier Documentation contient le manuel utilisateur et les guides Word.
+Commencez par AquaMeasure_Manuel_Utilisateur.docx.
+
+Le paquet contient Fishial (détection et classification), Community Fish
+Detector YOLOv12x et RF-DETR nano/small/medium, MegaFishDetector, les modèles
+MBARI du catalogue, les modèles de secours et le suivi ByteTrack.
+Le manifeste models-manifest.json fournit la liste et les empreintes exactes.
+Un seul modèle est sélectionné à la fois dans Détection IA. Les variantes
+YOLO correspondent à différents fichiers de poids, pas à plusieurs logiciels.
+
+Le catalogue comprend 2 438 espèces, dont le référentiel Madagascar et les
+noms Fishial. Ajouter un nom au catalogue ne réentraîne pas le classifieur.
+La base de travail est neuve : aucune session, photo, mesure, calibration ou
+référence Fishial personnelle de démonstration n'est fournie.
+
+Le moteur SAM 3 est inclus via Transformers. Les poids demandent votre propre
+accès au modèle facebook/sam3 sur Hugging Face. Le formulaire se trouve dans
+le gestionnaire des modèles, onglet Étendre. Le guide des modèles décrit les
+étapes. Aucun jeton personnel n'est fourni dans ce paquet.
+
+Cette édition utilise le processeur, sans CUDA. Les modèles fournis peuvent
+être utilisés sans téléchargement initial. Un modèle ajouté depuis Internet
+ou le premier chargement des poids SAM 3 nécessite une connexion.
+
+Dans Édition > Préférences, vérifiez l'emplacement des données. Conservez les
+vidéos originales : l'application mémorise leurs chemins sans les copier.
+Sauvegardez la base avec l'outil prévu, et gardez les vidéos et la calibration
+sur un autre support. Un export de résultats ne remplace pas cette sauvegarde.
+
+Pour ajouter des poids compatibles : Mesure > Détection IA > Gérer les modèles
+> Étendre > Choisir un fichier. Une nouvelle architecture peut nécessiter une
+nouvelle version du logiciel ; l'inférence n'installe pas de bibliothèques.

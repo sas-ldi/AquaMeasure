@@ -1,0 +1,38 @@
+# RTX 5070 Ti (~16 Go VRAM) — réglages par défaut
+# Bootstrap : dataset public (configs/data_public.yaml)
+# Fine-tuning : export DB (configs/data_custom.yaml)
+
+model: yolo11s.pt
+epochs: 100
+imgsz: 640
+batch: 16
+patience: 30
+device: 0
+workers: 8
+amp: true
+cache: false
+project: runs/detect
+name: fish_train
+
+# Profil bootstrap plus rapide (dataset public, 1 classe)
+bootstrap:
+  model: yolo11n.pt
+  epochs: 50
+  batch: 32
+  name: fish_bootstrap
+
+# Profil fine-tuning Madagascar (après db_export)
+finetune:
+  model: yolo11s.pt
+  epochs: 100
+  batch: 16
+  imgsz: 640
+  name: fish_madagascar
+
+# Fine-tuning familles depuis fish_detect_public.pt (multi-classes Roboflow / FishInv)
+family_finetune:
+  model: models/fish_detect_public.pt
+  epochs: 60
+  batch: 16
+  imgsz: 640
+  name: fish_family

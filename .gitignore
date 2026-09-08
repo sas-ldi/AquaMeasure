@@ -1,0 +1,115 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+release/
+LIVRAISON_CLIENT/
+DEMO_CLIENT/
+# Les distributions et poids se téléchargent ou se compilent hors du dépôt.
+*.exe
+*.dll
+*.msi
+*.pt
+*.pth
+*.onnx
+vendor/yolov5/
+.venv-mac/
+dist-mac/
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+
+# Données générées par l'app
+camera_parameters/
+/tmp/stereo_calib/
+debug_corners.png
+*.log
+
+# Datasets exportés : artefacts dérivés, immuables et régénérables depuis la
+# base — ils se comptent en centaines de Mo et n'ont rien à faire dans git.
+/data/exports/
+
+# Module QML généré : aquameasure-pyside/main.py::_prepare_qml_module recopie
+# qml/{components,pages,style} dans qml/AquaMeasure/ et régénère qmldir via
+# tools/gen_qmldir.py à CHAQUE démarrage. C'est un miroir, pas une source :
+# le versionner dupliquait chaque fichier QML et provoquait un conflit de
+# fusion par composant modifié. Les sources restent qml/{components,pages,style}.
+aquameasure-pyside/qml/AquaMeasure/
+
+# Ancienne version
+stereo_app.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Captures de recette produites par aquameasure-pyside/tools/ : des PNG
+# regenerables a la demande, jamais une source.
+aquameasure-pyside/tools/output/
+
+# Modeles IA telecharges a la demande (catalogue detecteurs)
+aquameasure-pyside/models/
+detectors.local.json
+detectors.state.json
+
+# fish-vision ML module
+fish-vision/data/*
+!fish-vision/data/.gitkeep
+fish-vision/data/downloads/
+fish-vision/runs/
+fish-vision/models/*
+!fish-vision/models/.gitkeep
+!fish-vision/models/fishial_labels.json
+fish-vision/.venv/
+
+# Base d'annotations locale : donnees de travail, jamais partagees par git.
+fish_annotations.db
+fish_annotations.db-shm
+fish_annotations.db-wal
+
+# Images materialisees par l'app (vignettes, crops) : regenerables.
+/data/media/
+
+# Brouillons d'outillage local
+.codex/
+
+# Worktrees temporaires des agents Claude Code
+.claude/worktrees/
+
+# Captures de recette, regenerables par les scripts de tools/
+docs/captures/
+
+# Contenu local exclu du dépôt public.
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.mov
+*.MOV
+*.mp4
+*.MP4
+*.avi
+*.AVI
+*.zip
+*.7z
+*.dmg
+*.pkg
+*.safetensors
+.env
+.env.*
+!.env.example
+.cursor/
+Calibrate_videos/
+D2/
+J2/
+synched/
+aquameasure-pyside/docs/images/geometry.json

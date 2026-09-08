@@ -1,0 +1,35 @@
+name: Vérification des sources
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Contrôler les fichiers publiés et les liens des manuels
+        run: python scripts/check_publication.py
+      - name: Vérifier la syntaxe Python
+        run: python -m compileall -q aquameasure-pyside fish-vision fish_detectors plugins scripts *.py
+      - name: Installer les dépendances des tests de données
+        run: python -m pip install sqlalchemy numpy pyyaml opencv-python-headless
+      - name: Vérifier taxonomie, sessions, CSV et événements COCO-VID
+        working-directory: fish-vision
+        run: >-
+          python -m unittest
+          tests.test_madagascar_taxonomy
+          tests.test_sessions
+          tests.test_session_csv_tables
+          tests.test_session_export_workflow
+          tests.test_export_tracking

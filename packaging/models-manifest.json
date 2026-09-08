@@ -1,0 +1,112 @@
+{
+  "edition": "2026.09.08 complète CPU",
+  "files": [
+    {
+      "path": "fish-vision/models/cfd-rf-detr-medium-1024-2026.07.06.pth",
+      "size": 134920337,
+      "sha256": "2e94814c7a9318aa2e98e5f6b866ceebe0b5b8f92e6fccb912e7e334a7913911"
+    },
+    {
+      "path": "fish-vision/models/cfd-rf-detr-nano-640-2026.07.06.pth",
+      "size": 122056633,
+      "sha256": "e3eac301b778e251c3826eae247cc783e1f2dab3fd71a18de92bf3e8999c6f10"
+    },
+    {
+      "path": "fish-vision/models/cfd-rf-detr-small-1024-2026.07.06.pth",
+      "size": 127327589,
+      "sha256": "da078e3cbd7120f5e1880c66723b21e62acad7260adddc4ac7f32fe1468aa49a"
+    },
+    {
+      "path": "fish-vision/models/cfd-yolov12x-1.00.pt",
+      "size": 119113078,
+      "sha256": "0b259afb3dca1d1d7f9d842ebf136884b2e3706b151172b266bb24e07f2b8e98"
+    },
+    {
+      "path": "fish-vision/models/detector_v26_n3/model.pt",
+      "size": 131193007,
+      "sha256": "5b786b334355fdb0c3faa9d375d70de24f3535ee6f11e9c3e26ec2e90810c03f"
+    },
+    {
+      "path": "fish-vision/models/fish_detect_family.onnx",
+      "size": 10609747,
+      "sha256": "541c7bd0f01127676c0478186efcb030398e99a802441705eca7af2030038e71"
+    },
+    {
+      "path": "fish-vision/models/fish_detect_family.pt",
+      "size": 5463322,
+      "sha256": "2020392b68bd5b859452a91af650678c3cc7bafd5b3b805ab29d01cf8367e970"
+    },
+    {
+      "path": "fish-vision/models/fish_detect_public.onnx",
+      "size": 10604166,
+      "sha256": "124f0c99ca05f2b8df9647e189b47e8c38b9f0a32d79c4492afbb2019aedd58f"
+    },
+    {
+      "path": "fish-vision/models/fish_detect_public.pt",
+      "size": 5453850,
+      "sha256": "81aee145170e2cd9ec87ef9d8c829ce583cff1f1d43c7c406a178d4b10071c9b"
+    },
+    {
+      "path": "fish-vision/models/fishial_classification_v0.10.2/inference.py",
+      "size": 40081,
+      "sha256": "9033244bf768a0c6b79fb8f44df315aea1f7f696d24a0c4b966ecfa3357f9cbd"
+    },
+    {
+      "path": "fish-vision/models/fishial_classification_v0.10.2/info.json",
+      "size": 306,
+      "sha256": "3fb284558d7fa5a43dd4a02eacda4f5104a9257fa66234951dcca8163cdba277"
+    },
+    {
+      "path": "fish-vision/models/fishial_classification_v0.10.2/model.pt",
+      "size": 378986452,
+      "sha256": "926fa91b8d1fb3b370b6a54f6c8bf6b846152f472a5150ae7ae59d4f3f1dcbcc"
+    },
+    {
+      "path": "fish-vision/models/fishial_classification_v0.10.2/requirements.txt",
+      "size": 138,
+      "sha256": "cff3be672901cc95f5f410dfcf17949f387fbc60490d60db9acf413007799b18"
+    },
+    {
+      "path": "fish-vision/models/fishial_labels.json",
+      "size": 24703,
+      "sha256": "86d7d3652a0d33aa710e61d04043abcfbba0a92dd07f13bbad05071bf77323da"
+    },
+    {
+      "path": "fish-vision/models/fishial_segmentator_fpn_res18/inference.py",
+      "size": 13535,
+      "sha256": "12d532840834b99541349ef47515e56c8b3cb270945b865bb7b9189d86cb054b"
+    },
+    {
+      "path": "fish-vision/models/fishial_segmentator_fpn_res18/info.json",
+      "size": 137,
+      "sha256": "05c449fcc59fa92a039ac3e02c8c5a591074669b3b45f6afd772ebde2c480ba2"
+    },
+    {
+      "path": "fish-vision/models/fishial_segmentator_fpn_res18/model.ts",
+      "size": 52491755,
+      "sha256": "b1ef999b2096905b217a5bcd61801d5d3e6f9141ab141d68c85be5429f559f2e"
+    },
+    {
+      "path": "fish-vision/models/mbari-megalodon-yolo11x.pt",
+      "size": 114390802,
+      "sha256": "27ab91d07fa61d6ae1af9a2c18e29d6b89044254aec7d38b1a4331cbb9b3a450"
+    },
+    {
+      "path": "fish-vision/models/mbari_315k_yolov8.pt",
+      "size": 137709813,
+      "sha256": "16d2d8f066501b58d35125f172a34fa1b51add9eaab25a8ecd6de92932ef775d"
+    },
+    {
+      "path": "fish-vision/models/megafishdetector_v0_yolov5m_1280p.pt",
+      "size": 168279579,
+      "sha256": "ae46b6916767d1a652eae4b5e955caa99e3b37c0945507b15905428db748e185"
+    },
+    {
+      "path": "fish-vision/models/megafishdetector_v0_yolov5s_640p.pt",
+      "size": 14378493,
+      "sha256": "0d80abde5aa4c2fde950fb4fa960d8f04695886e1a40383e248cc4894f3595af"
+    }
+  ],
+  "yolov5_commit": "35b48237aef6d71ca9de2c5dea345d7536eb7fa7",
+  "sam3": "Moteur Transformers inclus ; poids soumis à accès Hugging Face personnel."
+}

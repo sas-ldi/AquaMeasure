@@ -1,0 +1,39 @@
+# Roboflow Fish / familles recifales -> taxon_node_id (fish_annotations.db)
+# IDs fixes depuis db/seed_taxonomy.sql
+
+mapping:
+  fish: taxon-fish-generic
+  Fish: taxon-fish-generic
+  poisson: taxon-fish-generic
+  # Familles herbivores / cibles Madagascar
+  Acanthuridae: taxon-fam-acanthuridae
+  Scaridae: taxon-fam-scaridae
+  Pomacanthidae: taxon-fam-pomacanthidae
+  Pomacentridae: taxon-fam-pomacentridae
+  Labridae: taxon-fam-labridae
+  # Autres familles du dataset Roboflow Fish
+  Balistidae: taxon-fam-balistidae
+  Carangidae: taxon-fam-carangidae
+  Ephippidae: taxon-fam-ephippidae
+  Lutjanidae: taxon-fam-lutjanidae
+  Scombridae: taxon-fam-scombridae
+  Serranidae: taxon-fam-serranidae
+  Zanclidae: taxon-fam-zanclidae
+  shark: taxon-fam-shark
+  Shark: taxon-fam-shark
+  sharks: taxon-fam-shark
+  # Genres seed (CVAT / annotations manuelles)
+  Acanthurus: taxon-gen-acanthurus
+  Ctenochaetus: taxon-gen-ctenochaetus
+  Zebrasoma: taxon-gen-zebrasoma
+  "Acanthurus sp.": taxon-sp-unknown-acanthurus
+  "Ctenochaetus sp.": taxon-sp-unknown-ctenochaetus
+  Chaetodontidae: taxon-fam-chaetodontidae
+  Haemulidae: taxon-fam-haemulidae
+  Muraenidae: taxon-fam-muraenidae
+  scaridae: taxon-fam-scaridae
+  lutjanidae: taxon-fam-lutjanidae
+  serranidae: taxon-fam-serranidae
+  haemulidae: taxon-fam-haemulidae
+  chaetodontidae: taxon-fam-chaetodontidae
+  muraenidae: taxon-fam-muraenidae

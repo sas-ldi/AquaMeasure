@@ -1,5 +1,5 @@
 {
-  "edition": "2026.09.08 complète CPU",
+  "edition": "2026.09.24 complète CPU",
   "files": [
     {
       "path": "annotations/models/cfd-rf-detr-medium-1024-2026.07.06.pth",

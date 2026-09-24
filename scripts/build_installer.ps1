@@ -1,6 +1,6 @@
 ﻿param(
     [string]$PortableDir = "",
-    [string]$OutputName = "AquaMeasure-Setup-20260908"
+    [string]$OutputName = "AquaMeasure-Setup-20260924"
 )
 
 $ErrorActionPreference = "Stop"
@@ -10,7 +10,7 @@ $issPath = Join-Path $repoRoot "packaging\AquaMeasure-installer.iss"
 $releaseDir = Join-Path $repoRoot "release"
 
 if ([string]::IsNullOrWhiteSpace($PortableDir)) {
-    $PortableDir = Join-Path $releaseDir "AquaMeasure-Windows-x64-20260908"
+    $PortableDir = Join-Path $releaseDir "AquaMeasure-Windows-x64-20260924"
 }
 $PortableDir = (Resolve-Path -LiteralPath $PortableDir).Path
 

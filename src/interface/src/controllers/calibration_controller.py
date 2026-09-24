@@ -16,6 +16,28 @@ from src.util.calib_file_logger import CalibFileLogger
 from src.util.log_model import CalibLogModel
 
 
+def _rotation_angles(r) -> tuple[float, str]:
+    """Angle total entre les deux cameras et sa decomposition par axe.
+
+    Le total melange tout : sur un support fixe, seule la part horizontale
+    doit porter l'ecartement prevu, le vertical et le roulis restent pres
+    de zero. Axes OpenCV de la camera gauche : x (tangage), y (lacet),
+    z (roulis).
+    """
+    import cv2
+
+    rm = np.asarray(r, dtype=np.float64).reshape(3, 3)
+    total = math.degrees(
+        math.acos(max(-1.0, min(1.0, (float(np.trace(rm)) - 1.0) / 2.0)))
+    )
+    pitch, yaw, roll = cv2.RQDecomp3x3(rm)[0]
+    detail = (
+        f"horizontal {abs(yaw):.2f}° · vertical {abs(pitch):.2f}°"
+        f" · roulis {abs(roll):.2f}°"
+    )
+    return float(total), detail
+
+
 class CalibrationController(QObject):
     stepChanged = Signal()
     progressChanged = Signal()
@@ -79,6 +101,8 @@ class CalibrationController(QObject):
         self._rmse_right = -1.0
         self._baseline = -1.0
         self._rotation = -1.0
+        self._rotation_detail = ""
+        self._rotation_detail = ""
         self._focal_l = -1.0
         self._focal_r = -1.0
         self._summary = ""
@@ -197,6 +221,10 @@ class CalibrationController(QObject):
     @Property(float, notify=rotationDegChanged)
     def rotationDeg(self):
         return self._rotation
+
+    @Property(str, notify=rotationDegChanged)
+    def rotationDetail(self):
+        return self._rotation_detail
 
     @Property(float, notify=focalLeftPxChanged)
     def focalLeftPx(self):
@@ -370,16 +398,13 @@ class CalibrationController(QObject):
             t = np.load(base / "T.npy")
             t_vec = np.asarray(t).reshape(-1)
             baseline = float(np.linalg.norm(t_vec))
-            rotation = float(
-                math.degrees(
-                    math.acos(max(-1.0, min(1.0, (float(np.trace(r)) - 1.0) / 2.0)))
-                )
-            )
+            rotation, detail = _rotation_angles(r)
             if self._baseline != baseline:
                 self._baseline = baseline
                 self.baselineMmChanged.emit()
-            if self._rotation != rotation:
+            if self._rotation != rotation or self._rotation_detail != detail:
                 self._rotation = rotation
+                self._rotation_detail = detail
                 self.rotationDegChanged.emit()
         except OSError:
             pass
@@ -457,6 +482,7 @@ class CalibrationController(QObject):
         self._rmse_right = -1.0
         self._baseline = -1.0
         self._rotation = -1.0
+        self._rotation_detail = ""
         self._focal_l = -1.0
         self._focal_r = -1.0
         self._det_l = -1
@@ -682,6 +708,13 @@ class CalibrationController(QObject):
         self._detail = ""
         self._left_caption = ""
         self._right_caption = ""
+        # Sans ca, l'apercu reaffiche la derniere image du calcul precedent
+        # (autre paire video) jusqu'a la premiere detection du nouveau.
+        if self._images is not None:
+            self._images.set_image("calib_left", QImage())
+            self._images.set_image("calib_right", QImage())
+        self._preview_tick += 1
+        self.previewTickChanged.emit()
         self._clear_live_results()
         self._det_l = 0
         self._det_r = 0
@@ -960,11 +993,7 @@ class CalibrationController(QObject):
         if r is not None and t is not None and data.get("baseline_mm") is None:
             t_vec = np.asarray(t).reshape(-1)
             self._baseline = float(np.linalg.norm(t_vec))
-            self._rotation = float(
-                math.degrees(
-                    math.acos(max(-1.0, min(1.0, (float(np.trace(r)) - 1.0) / 2.0)))
-                )
-            )
+            self._rotation, self._rotation_detail = _rotation_angles(r)
             self.baselineMmChanged.emit()
             self.rotationDegChanged.emit()
         for key, attr, sig in (

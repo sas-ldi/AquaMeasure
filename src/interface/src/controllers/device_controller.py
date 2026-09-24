@@ -45,6 +45,8 @@ class DeviceController(QObject):
         self._cam_power: dict[int, str] = {1: "", 2: ""}
         # True quand les durées affichées viennent d'une lecture « seq ».
         self._sequence_synced = False
+        # Durées envoyées par « Envoyer la séquence », comparées à la relecture.
+        self._sent_sequence: tuple[int, int] | None = None
 
         # Lecture non bloquante des lignes renvoyées par la carte.
         self._rx_timer = QTimer(self)
@@ -352,6 +354,7 @@ class DeviceController(QObject):
         que rien ne le signale.
         """
         rec, pause = ap.parse_sequence_reply(text)
+        sent, self._sent_sequence = self._sent_sequence, None
         if rec is None and pause is None:
             if text:
                 self._append_log(
@@ -374,6 +377,20 @@ class DeviceController(QObject):
         if changed:
             self._append_log("Séquence relue dans la carte : " + ", ".join(changed))
         self._set_sequence_synced(True)
+        # Les champs affichent la mémoire de la carte : si elle diffère de ce
+        # qui vient d'être envoyé, la carte a ignoré la commande. Sans ce
+        # message, l'application semblait « remettre 50 » toute seule.
+        if sent is not None:
+            refused = []
+            if rec is not None and rec != sent[0]:
+                refused.append(f"enregistrement {sent[0]} min (la carte garde {rec} min)")
+            if pause is not None and pause != sent[1]:
+                refused.append(f"veille {sent[1]} min (la carte garde {pause} min)")
+            if refused:
+                message = ("La carte n'a pas appliqué : " + " ; ".join(refused)
+                           + ". Réponse de la carte : " + " | ".join(text.splitlines()))
+                self._append_log("[!] " + message)
+                self._set_error(message)
 
     def _set_sequence_synced(self, value: bool) -> None:
         if self._sequence_synced != value:
@@ -548,6 +565,7 @@ class DeviceController(QObject):
             f"Séquence : {self._record_min} min d'enregistrement / "
             f"{self._pause_min} min de veille"
         )
+        self._sent_sequence = (self._record_min, self._pause_min)
         self._tx_queue = [("Séquence", text) for text in lines]
         self._pump_queue()
 

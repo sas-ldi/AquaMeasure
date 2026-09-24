@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 if ([string]::IsNullOrWhiteSpace($SetupPath)) {
-    $SetupPath = Join-Path $projectRoot "release\AquaMeasure-Setup-20260908.exe"
+    $SetupPath = Join-Path $projectRoot "release\AquaMeasure-Setup-20260924.exe"
 }
 $SetupPath = (Resolve-Path -LiteralPath $SetupPath).Path
 

@@ -1,0 +1,27 @@
+AQUAMEASURE - NOTES DE VERSION
+
+2026.09.24
+----------
+Retours de la première sortie en mer.
+
+- Calibration : l'aperçu de détection ne montre plus l'image de la
+  calibration précédente au lancement. Il restait affiché jusqu'à la
+  première détection et laissait croire que l'ancienne vidéo était
+  utilisée. Le calcul, lui, portait déjà sur la bonne vidéo.
+- Calibration : sous « Rotation relative », l'angle entre les deux
+  caméras est maintenant décomposé en horizontal, vertical et roulis.
+  Sur un support fixe, l'écartement prévu doit se retrouver dans la part
+  horizontale, le vertical et le roulis restant proches de zéro. Comparer
+  ces valeurs d'un passage de mire à l'autre montre si la calibration est
+  stable.
+
+Rappel : la fenêtre choisie dans l'onglet Synchronisation n'est prise en
+compte par la calibration qu'après « Enregistrer In-Out ».
+
+2026.09.23
+----------
+- Lecteur vidéo embarqué dans l'installation : la version 2026.09.08
+  restait bloquée sur « Chargement vidéo… ».
+- Lecteur de synchronisation : message d'erreur après 30 s de chargement.
+- Onglet Machine : un refus de la séquence rec/veille par la carte est
+  signalé au lieu d'être ignoré.

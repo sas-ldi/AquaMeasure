@@ -9,6 +9,30 @@ from pathlib import Path
 from prepare_release_models import BUNDLED_FILES
 
 
+def audit_qt_runtime(root: Path) -> None:
+    """Chaque module importé par le QML doit être livré avec ses plugins.
+
+    La livraison du 2026-09-08 ne contenait pas plugins/multimedia : le lecteur
+    vidéo restait bloqué sur « Chargement vidéo… » sans aucune erreur.
+    """
+    qt = root / "PySide6"
+    imports = set()
+    for qml in (root / "aquameasure-pyside/qml").rglob("*.qml"):
+        for line in qml.read_text(encoding="utf-8").splitlines():
+            parts = line.split()
+            if len(parts) >= 2 and parts[0] == "import" and parts[1].startswith("Qt"):
+                imports.add(parts[1])
+    missing = [name for name in sorted(imports)
+               if not (qt / "qml" / Path(*name.split("."))).is_dir()]
+    assert not missing, f"Modules QML absents : {missing}"
+    required = ["plugins/platforms/qwindows.dll", "plugins/imageformats/qjpeg.dll",
+                "plugins/multimedia/ffmpegmediaplugin.dll"]
+    missing = [name for name in required if not (qt / name).is_file()]
+    assert not missing, f"Plugins Qt absents : {missing}"
+    for prefix in ("avcodec", "avformat", "avutil", "swscale", "swresample"):
+        assert list(qt.glob(prefix + "-*.dll")), f"DLL FFmpeg de Qt absente : {prefix}"
+
+
 def audit(folder: Path) -> dict:
     root = folder.resolve()
     manifest = json.loads((root / "models-manifest.json").read_text(encoding="utf-8"))
@@ -47,6 +71,7 @@ def audit(folder: Path) -> dict:
             path = root / "Documentation" / folder / guide["category"] / (guide["stem"] + suffix)
             assert path.is_file(), f"Manuel absent : {path}"
     assert (root / "interface/resources/aquameasure.ico").is_file()
+    audit_qt_runtime(root)
     return {"ok": True, "model_files": len(expected), "model_bytes": sum(row["size"] for row in manifest["files"]),
             "working_data_files": forbidden, "edition": manifest["edition"]}
 

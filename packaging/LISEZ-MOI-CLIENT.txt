@@ -1,7 +1,7 @@
 AQUAMEASURE | VERSION DU 8 SEPTEMBRE 2026
 
 INSTALLER
-1. Ouvrez AquaMeasure-Setup-20260908.exe et suivez l'assistant.
+1. Ouvrez AquaMeasure-Setup-20260924.exe et suivez l'assistant.
 2. Lancez AquaMeasure depuis le menu Démarrer ou le raccourci au logo IRD.
 3. Commencez par le Manuel utilisateur, dans Manuels/PDF/01_Utilisation.
 

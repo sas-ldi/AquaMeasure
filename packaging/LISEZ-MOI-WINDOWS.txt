@@ -1,4 +1,4 @@
-AQUAMEASURE 2026.09.08 | ÉDITION COMPLÈTE WINDOWS CPU
+AQUAMEASURE 2026.09.24 | ÉDITION COMPLÈTE WINDOWS CPU
 
 Décompressez toute l'archive puis ouvrez AquaMeasure.exe. Gardez les fichiers
 et sous-dossiers ensemble. Python n'est pas à installer séparément.

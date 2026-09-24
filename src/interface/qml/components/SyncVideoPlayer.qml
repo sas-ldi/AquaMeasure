@@ -16,11 +16,21 @@ Item {
     readonly property int playheadFrame: _playhead
     readonly property bool ready: media.mediaStatus === MediaPlayer.LoadedMedia
                                 || media.mediaStatus === MediaPlayer.BufferedMedia
-    readonly property bool loading: videoPath.length > 0
+    readonly property bool loading: videoPath.length > 0 && !_loadTimedOut
         && (media.mediaStatus === MediaPlayer.LoadingMedia
             || media.mediaStatus === MediaPlayer.NoMedia)
     readonly property bool hasError: media.mediaStatus === MediaPlayer.InvalidMedia
                                     || media.error !== MediaPlayer.NoError
+                                    || _loadTimedOut
+
+    // Sans moteur multimédia, le lecteur reste en chargement sans jamais
+    // signaler d'erreur : passé ce délai, on affiche « Lecture impossible ».
+    property bool _loadTimedOut: false
+    Timer {
+        id: loadTimeout
+        interval: 30000
+        onTriggered: root._loadTimedOut = !root.ready
+    }
 
     property int _playhead: 0
     property bool _blockSeek: false
@@ -146,6 +156,11 @@ Item {
 
     onVideoPathChanged: {
         primeTimer.stop()
+        _loadTimedOut = false
+        if (videoPath.length > 0)
+            loadTimeout.restart()
+        else
+            loadTimeout.stop()
         _primed = false
         _primePending = false
         const url = pathToUrl(videoPath)

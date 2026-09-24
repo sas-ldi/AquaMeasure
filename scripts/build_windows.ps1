@@ -1,6 +1,6 @@
-param(
+﻿param(
     [string]$Python = ".venv\Scripts\python.exe",
-    [string]$ReleaseName = "AquaMeasure-Windows-x64-20260908",
+    [string]$ReleaseName = "AquaMeasure-Windows-x64-20260924",
     [string]$CpuOverlay = "build\pyinstaller-cpu-overlay",
     [string]$DocumentationPdfDir = "",
     [switch]$SkipArchive
@@ -102,6 +102,7 @@ main._prepare_qml_module(main._setup_paths())
     }
 
     Copy-Item -LiteralPath (Join-Path $repo "packaging\LISEZ-MOI-WINDOWS.txt") -Destination $release
+    Copy-Item -LiteralPath (Join-Path $repo "packaging\NOTES-DE-VERSION.txt") -Destination $release
     $docsDir = Join-Path $release "Documentation"
     $docArgs = @($docsDir)
     if ($DocumentationPdfDir) { $docArgs += @("--pdf-root", $DocumentationPdfDir) }

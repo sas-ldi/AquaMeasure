@@ -1,9 +1,9 @@
 #define MyAppName "AquaMeasure"
-#define MyAppVersion "2026.09.08"
+#define MyAppVersion "2026.09.24"
 #define MyAppPublisher "AquaMeasure"
 #define MyAppExeName "AquaMeasure.exe"
 #ifndef MyAppSource
-  #define MyAppSource "..\release\AquaMeasure-Windows-x64-20260908"
+  #define MyAppSource "..\release\AquaMeasure-Windows-x64-20260924"
 #endif
 
 [Setup]
@@ -16,7 +16,7 @@ DefaultDirName={localappdata}\Programs\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=..\release
-OutputBaseFilename=AquaMeasure-Setup-20260908
+OutputBaseFilename=AquaMeasure-Setup-20260924
 SetupIconFile=..\src\interface\resources\aquameasure.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -51,6 +51,7 @@ Name: "{userdocs}\AquaMeasure - Donnees\data\media"; Flags: uninsneveruninstall;
 Name: "{group}\AquaMeasure"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; AppUserModelID: "IRD.AquaMeasure"
 Name: "{group}\Dossier des données AquaMeasure"; Filename: "{userdocs}\AquaMeasure - Donnees"
 Name: "{group}\Guide d'installation"; Filename: "{app}\LISEZ-MOI-INSTALLATION.txt"
+Name: "{group}\Notes de version"; Filename: "{app}\NOTES-DE-VERSION.txt"
 Name: "{group}\Documentation"; Filename: "{app}\Documentation"
 Name: "{group}\Manuel utilisateur"; Filename: "{app}\Documentation\PDF\01_Utilisation\AquaMeasure_Manuel_Utilisateur.pdf"
 Name: "{group}\Guide des modèles IA"; Filename: "{app}\Documentation\PDF\01_Utilisation\AquaMeasure_Guide_Extension_Modeles_Detection.pdf"

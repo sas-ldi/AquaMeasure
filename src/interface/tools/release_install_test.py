@@ -10,6 +10,41 @@ import tempfile
 import traceback
 
 
+def _check_video_playback(root: Path) -> str:
+    """Le lecteur QtMultimedia doit ouvrir un MP4 (plugins FFmpeg livrés)."""
+    import cv2
+    import numpy as np
+    from PySide6.QtCore import QEventLoop, QTimer, QUrl
+    from PySide6.QtMultimedia import QMediaPlayer, QVideoSink
+
+    real = os.environ.get("AQUAMEASURE_TEST_VIDEO")
+    video = Path(real) if real else root / "lecture.mp4"
+    writer = None if real else cv2.VideoWriter(str(video), cv2.VideoWriter_fourcc(*"mp4v"), 25, (320, 240))
+    for index in range(25 if writer else 0):
+        writer.write(np.full((240, 320, 3), index * 8, np.uint8))
+    if writer:
+        writer.release()
+    player = QMediaPlayer()
+    sink = QVideoSink()
+    player.setVideoOutput(sink)
+    loop = QEventLoop()
+    player.mediaStatusChanged.connect(lambda *_: loop.quit())
+    player.errorOccurred.connect(lambda *_: loop.quit())
+    QTimer.singleShot(15000, loop.quit)
+    player.setSource(QUrl.fromLocalFile(str(video)))
+    ok = (QMediaPlayer.MediaStatus.LoadedMedia, QMediaPlayer.MediaStatus.BufferedMedia)
+    for _ in range(10):
+        if player.mediaStatus() in ok or player.error() != QMediaPlayer.Error.NoError:
+            break
+        loop.exec()
+    status, duration, error = player.mediaStatus(), player.duration(), player.errorString()
+    player.stop()
+    player.setSource(QUrl())
+    assert status in ok, f"Lecteur vidéo inopérant : {status} {error}"
+    assert duration > 0, "Durée vidéo nulle"
+    return f"{status.name} {video.name} {duration} ms"
+
+
 def run(output: Path, app_dir: Path) -> int:
     report = {"ok": False}
     engine = None
@@ -57,6 +92,7 @@ def run(output: Path, app_dir: Path) -> int:
                 assert not any(report["working_data"].values()), "Données de démonstration présentes"
             finally:
                 connection.close()
+            report["video_playback"] = _check_video_playback(root)
             report["ok"] = True
         except Exception:
             report["error"] = traceback.format_exc()

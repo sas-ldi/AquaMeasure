@@ -303,13 +303,22 @@ Rectangle {
                         color: Theme.textMuted
                         font.pixelSize: Theme.fontCaption
                     }
-                    Text {
-                        text: Calib.rotationDeg >= 0
-                            ? qsTr("%1°").arg(Calib.rotationDeg.toFixed(2))
-                            : "-"
-                        font.family: Theme.monoFamily
-                        font.pixelSize: Theme.fzSm
-                        color: Theme.text
+                    ColumnLayout {
+                        spacing: 0
+                        Text {
+                            text: Calib.rotationDeg >= 0
+                                ? qsTr("%1°").arg(Calib.rotationDeg.toFixed(2))
+                                : "-"
+                            font.family: Theme.monoFamily
+                            font.pixelSize: Theme.fzSm
+                            color: Theme.text
+                        }
+                        Text {
+                            visible: Calib.rotationDeg >= 0 && Calib.rotationDetail !== ""
+                            text: Calib.rotationDetail
+                            font.pixelSize: Theme.fontCaption
+                            color: Theme.textMuted
+                        }
                     }
                     AppLabel {
                         text: qsTr("Focale G / D")

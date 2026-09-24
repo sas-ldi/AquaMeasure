@@ -81,7 +81,7 @@ def main():
             raise FileNotFoundError(path)
         files.append({"path": path.relative_to(ROOT / "src").as_posix(), "size": path.stat().st_size,
                       "sha256": sha256(path)})
-    manifest = {"edition": "2026.09.08 complète CPU", "files": files,
+    manifest = {"edition": "2026.09.24 complète CPU", "files": files,
                 "yolov5_commit": YOLOV5_COMMIT,
                 "sam3": "Moteur Transformers inclus ; poids soumis à accès Hugging Face personnel."}
     (ROOT / "packaging/models-manifest.json").write_text(

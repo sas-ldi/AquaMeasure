@@ -1,6 +1,6 @@
-AQUAMEASURE 2026.09.08 | INSTALLATION WINDOWS
+AQUAMEASURE 2026.09.24 | INSTALLATION WINDOWS
 
-Lancez AquaMeasure-Setup-20260908.exe et suivez l'assistant.
+Lancez AquaMeasure-Setup-20260924.exe et suivez l'assistant.
 L'application s'installe par défaut dans :
   %LOCALAPPDATA%\Programs\AquaMeasure
 

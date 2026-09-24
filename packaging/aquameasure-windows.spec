@@ -109,6 +109,10 @@ hiddenimports = [
     "numpy",
     "scipy.linalg",
     "serial",
+    # QtMultimedia n'est importé que depuis le QML : sans cet import explicite,
+    # PyInstaller n'embarque ni plugins/multimedia ni les DLL FFmpeg, et les
+    # vidéos restent bloquées sur « Chargement vidéo… ».
+    "PySide6.QtMultimedia",
     "sqlalchemy",
     "sqlalchemy.dialects.sqlite",
     "yaml",
@@ -128,6 +132,17 @@ hiddenimports = [
     "fish_detectors.backends.yolov5_hub",
     "fish_detectors.backends.sam3",
 ]
+# Un paquet absent de l'environnement de compilation disparaît sans erreur du
+# paquet livré (constaté le 2026-09-23 pour rfdetr, supervision, av, pandas et
+# seaborn) : la compilation doit échouer plutôt que livrer une édition amputée.
+import importlib.util
+_required = ("PySide6.QtMultimedia", "cv2", "numpy", "scipy", "serial", "sqlalchemy", "yaml",
+             "onnxruntime", "torch", "torchvision", "lap", "ultralytics", "rfdetr", "supervision",
+             "transformers", "huggingface_hub", "albumentations", "timm", "pandas", "seaborn",
+             "matplotlib", "av", "PIL", "shapely")
+_missing = [name for name in _required if importlib.util.find_spec(name) is None]
+if _missing:
+    raise RuntimeError(f"Paquets absents de l'environnement de compilation : {_missing}")
 hiddenimports += collect_submodules("sqlalchemy")
 hiddenimports += ["albumentations", "albumentations.pytorch", "rfdetr", "pandas", "seaborn",
                   "transformers.models.sam3.modeling_sam3", "transformers.models.sam3.processing_sam3",

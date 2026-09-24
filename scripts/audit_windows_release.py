@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from prepare_release_models import BUNDLED_FILES
+from prepare_release_models import BUNDLED_FILES, catalog_files, edition_of
 
 
 def audit_qt_runtime(root: Path) -> None:
@@ -38,8 +38,8 @@ def audit(folder: Path) -> dict:
     manifest = json.loads((root / "models-manifest.json").read_text(encoding="utf-8"))
     catalog = json.loads((Path(__file__).resolve().parents[1] / "src/fish_detectors/catalog.json").read_text(encoding="utf-8"))
     expected = {"annotations/models/" + name for name in BUNDLED_FILES}
-    expected.update("annotations/models/" + row["filename"] for row in catalog["detectors"]
-                    if row.get("download_url") and not row.get("options", {}).get("archive"))
+    expected.update("annotations/models/" + name
+                    for name in catalog_files(catalog["detectors"], edition_of(manifest)))
     listed = {row["path"] for row in manifest["files"]}
     assert listed == expected, f"Manifeste inattendu : {listed ^ expected}"
     actual = {p.relative_to(root).as_posix() for p in (root / "annotations/models").rglob("*")

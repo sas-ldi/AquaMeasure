@@ -15,6 +15,13 @@ Retours de la première sortie en mer.
   ces valeurs d'un passage de mire à l'autre montre si la calibration est
   stable.
 
+- Nouvelle édition légère (environ 900 Mo au lieu de 1,7 Go) pour les
+  postes à faible débit : elle embarque la suite Fishial (détection,
+  classification d'espèce) et les petits détecteurs. Les autres modèles
+  s'ajoutent si besoin depuis l'onglet Modèles IA. Installée par-dessus
+  une version précédente, elle ne supprime ni les modèles déjà présents
+  ni les données (sessions, mesures, calibrations).
+
 Rappel : la fenêtre choisie dans l'onglet Synchronisation n'est prise en
 compte par la calibration qu'après « Enregistrer In-Out ».
 

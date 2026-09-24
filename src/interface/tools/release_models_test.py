@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import sys
 import tempfile
 import time
 import traceback
@@ -37,6 +38,11 @@ def run(output: Path) -> int:
                        "cfd-rfdetr-nano", "cfd-rfdetr-small", "cfd-rfdetr-medium",
                        "megafishdetector-s", "megafishdetector-m",
                        "megalodon-2024-yolov11", "mbari-315k-yolov8"]
+            manifest = Path(sys.executable).parent / "models-manifest.json"
+            if manifest.is_file() and "légère" in json.loads(
+                    manifest.read_text(encoding="utf-8")).get("edition", ""):
+                # L'édition légère n'embarque que Fishial et les petits modèles.
+                targets = ["aquameasure-public", "fishial-detector-v26", "megafishdetector-s"]
             for target in targets:
                 started = time.perf_counter()
                 row = {"id": target, "ok": False}

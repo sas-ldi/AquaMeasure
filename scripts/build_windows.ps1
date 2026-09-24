@@ -1,12 +1,19 @@
 ﻿param(
     [string]$Python = ".venv\Scripts\python.exe",
-    [string]$ReleaseName = "AquaMeasure-Windows-x64-20260924",
+    [string]$ReleaseName = "",
+    # « legere » : suite Fishial et petits modèles seulement (postes à faible débit).
+    [ValidateSet("complete", "legere")]
+    [string]$Edition = "complete",
     [string]$CpuOverlay = "build\pyinstaller-cpu-overlay",
     [string]$DocumentationPdfDir = "",
     [switch]$SkipArchive
 )
 
 $ErrorActionPreference = "Stop"
+if (-not $ReleaseName) {
+    $ReleaseName = "AquaMeasure-Windows-x64-20260924"
+    if ($Edition -eq "legere") { $ReleaseName += "-Legere" }
+}
 $repo = Split-Path -Parent $PSScriptRoot
 $pythonPath = Join-Path $repo $Python
 if (-not (Test-Path -LiteralPath $pythonPath)) {
@@ -57,7 +64,7 @@ print(f"Runtime tracking : torch {torch.__version__}, torchvision {torchvision._
         throw "Le runtime de tracking CPU est incomplet ou incorrect."
     }
 
-    & $pythonPath (Join-Path $repo "scripts\prepare_release_models.py")
+    & $pythonPath (Join-Path $repo "scripts\prepare_release_models.py") --edition $Edition
     if ($LASTEXITCODE -ne 0) { throw "Préparation des modèles échouée." }
     & $pythonPath -c @"
 import sys

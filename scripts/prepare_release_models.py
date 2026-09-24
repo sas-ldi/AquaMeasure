@@ -1,4 +1,9 @@
-"""Prépare les poids publics et leur inventaire pour l'installeur complet.
+"""Prépare les poids publics et leur inventaire pour l'installeur.
+
+Deux éditions : « complète » embarque tous les détecteurs du catalogue ;
+« légère » (--edition legere) ne garde que la suite Fishial (détection,
+classification, segmentation) et les petits détecteurs, pour les postes à
+faible débit. Les autres s'ajoutent ensuite depuis l'onglet Modèles IA.
 
 Les poids Fishial extraits doivent déjà se trouver dans src/annotations/models.
 Les autres poids sont téléchargés aux URL du catalogue et contrôlés par SHA-256.
@@ -8,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import argparse
 import json
 from pathlib import Path
 import urllib.request
@@ -31,6 +37,23 @@ BUNDLED_FILES = (
     "fishial_segmentator_fpn_res18/info.json",
 )
 
+# Édition légère : seuls détecteurs du catalogue gardés en plus de
+# BUNDLED_FILES. Choix du 2026-09-24 : les sept autres (MegaFish m, MBARI x2,
+# RF-DETR x3, YOLOv12x) pèsent environ 880 Mo et doublonnent Fishial.
+LIGHT_CATALOG_IDS = ("megafishdetector-s",)
+EDITIONS = {"complete": "complète", "legere": "légère"}
+
+
+def catalog_files(entries, edition: str) -> list[str]:
+    """Poids du catalogue embarqués pour une édition donnée."""
+    return [entry["filename"] for entry in entries
+            if entry.get("download_url") and not entry.get("options", {}).get("archive")
+            and (edition == "complete" or entry["id"] in LIGHT_CATALOG_IDS)]
+
+
+def edition_of(manifest: dict) -> str:
+    return "legere" if "légère" in manifest.get("edition", "") else "complete"
+
 
 def sha256(path):
     h = hashlib.sha256()
@@ -41,9 +64,13 @@ def sha256(path):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--edition", choices=sorted(EDITIONS), default="complete")
+    edition = parser.parse_args().edition
     entries = json.loads((ROOT / "src/fish_detectors/catalog.json").read_text(encoding="utf-8"))["detectors"]
+    wanted = set(catalog_files(entries, edition))
     for entry in entries:
-        if not entry.get("download_url") or entry.get("options", {}).get("archive"):
+        if entry.get("filename") not in wanted:
             continue
         target = MODELS / entry["filename"]
         if not target.is_file():
@@ -71,8 +98,7 @@ def main():
             dest.write_bytes(archive.read(member))
 
     required = set(BUNDLED_FILES)
-    required.update(entry["filename"] for entry in entries
-                    if entry.get("download_url") and not entry.get("options", {}).get("archive"))
+    required.update(wanted)
     files = []
     for name in sorted(required):
         path = (MODELS / name).resolve()
@@ -81,7 +107,7 @@ def main():
             raise FileNotFoundError(path)
         files.append({"path": path.relative_to(ROOT / "src").as_posix(), "size": path.stat().st_size,
                       "sha256": sha256(path)})
-    manifest = {"edition": "2026.09.24 complète CPU", "files": files,
+    manifest = {"edition": f"2026.09.24 {EDITIONS[edition]} CPU", "files": files,
                 "yolov5_commit": YOLOV5_COMMIT,
                 "sam3": "Moteur Transformers inclus ; poids soumis à accès Hugging Face personnel."}
     (ROOT / "packaging/models-manifest.json").write_text(

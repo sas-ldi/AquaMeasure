@@ -5,6 +5,14 @@ AQUAMEASURE - NOTES DE VERSION
 Retours de la première sortie en mer.
 
 Calibration
+- Correction importante : une fois installée, l'application rangeait la
+  calibration à côté du programme au lieu du dossier des données
+  (Documents\AquaMeasure - Donnees), et y cherchait la fenêtre In/Out.
+  Conséquences : bouton « Passer à la mesure » grisé après une calibration
+  réussie, et calibration faite sur toute la vidéo quelle que soit la
+  fenêtre, d'où des résultats identiques d'un passage de mire à l'autre.
+- Une calibration qui n'aboutit pas (fenêtre vide, résultat rejeté) le dit
+  clairement au lieu de réafficher le résultat précédent.
 - Choix de la mire en un clic (Paramètres ChArUco > Mire) : « Petite mire
   A3 (5×7) » ou « Grande mire 84 cm (20×7) ». Colonnes, lignes, tailles et
   dictionnaire sont remplis sans risque d'inversion. La mire choisie est

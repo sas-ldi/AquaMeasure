@@ -36,6 +36,7 @@ Retours de la première sortie en mer.
 
 | Où | Ce qui change |
 |---|---|
+| Calibration | Correction : une fois installée, l'application calibre enfin dans le dossier des données. Le bouton Passer à la mesure se débloque et la fenêtre In/Out est respectée. |
 | Calibration | Choix de la mire en un clic : petite mire A3 (5×7) ou grande mire 84 cm (20×7). Le choix est retenu d'un lancement à l'autre. |
 | Calibration | La rotation entre les deux caméras est détaillée en horizontal, vertical et roulis. |
 | Synchronisation | La fenêtre In/Out s'enregistre toute seule. Changer de paire de vidéos repart sur la vidéo entière et efface l'ancienne synchro. |

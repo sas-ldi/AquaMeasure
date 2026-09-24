@@ -325,6 +325,8 @@ class SyncController(QObject):
         try:
             from aquameasure import save_flash_roi
 
+            paths.bind_engine_root()
+
             save_flash_roi(self._left_roi, self._right_roi)
         except Exception as exc:  # noqa: BLE001
             self._logs.append(f"[!] Sauvegarde ROI flash : {exc}")
@@ -332,6 +334,8 @@ class SyncController(QObject):
     def _load_persisted_roi(self) -> None:
         try:
             from aquameasure import load_flash_roi
+
+            paths.bind_engine_root()
 
             left_roi, right_roi = load_flash_roi()
         except Exception:
@@ -367,6 +371,8 @@ class SyncController(QObject):
         self.rightRoiChanged.emit()
         try:
             from aquameasure import clear_flash_roi
+
+            paths.bind_engine_root()
 
             clear_flash_roi()
         except Exception:

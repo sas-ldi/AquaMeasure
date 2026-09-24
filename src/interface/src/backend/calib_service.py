@@ -111,6 +111,8 @@ class CalibWorker(QThread):
         try:
             import cv2 as cv
             from aquameasure import CHARUCO_DICT_MAP, CalibrationWorkerFast
+
+            paths.bind_engine_root()
         except ImportError as exc:
             self.error.emit(f"Import aquameasure : {exc}")
             self.finished_ok.emit()

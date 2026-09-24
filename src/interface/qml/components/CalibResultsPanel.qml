@@ -148,6 +148,15 @@ Rectangle {
 
                 Item { Layout.preferredHeight: Theme.s2 }
 
+                AppLabel {
+                    Layout.fillWidth: true
+                    visible: Calib.lastRunError !== "" && !Calib.busy
+                    text: Calib.lastRunError
+                    wrapMode: Text.WordWrap
+                    color: Theme.warning
+                    font.weight: Font.DemiBold
+                }
+
                 Rectangle {
                     Layout.fillWidth: true
                     implicitHeight: qualityBannerCol.implicitHeight + Theme.spaceLg * 2

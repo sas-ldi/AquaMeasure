@@ -66,6 +66,7 @@ class CalibrationController(QObject):
     lastCalibLogPathChanged = Signal()
     syncImportChanged = Signal()
     charucoSuggestionChanged = Signal()
+    lastRunErrorChanged = Signal()
 
     def __init__(self, settings: SettingsController, parent=None):
         super().__init__(parent)
@@ -94,6 +95,8 @@ class CalibrationController(QObject):
         self._detail = ""
         self._busy = False
         self._phase = ""
+        self._last_run_error = ""
+        self._r_stamp = None
         self._left = ""
         self._right = ""
         self._rmse_stereo = -1.0
@@ -101,7 +104,6 @@ class CalibrationController(QObject):
         self._rmse_right = -1.0
         self._baseline = -1.0
         self._rotation = -1.0
-        self._rotation_detail = ""
         self._rotation_detail = ""
         self._focal_l = -1.0
         self._focal_r = -1.0
@@ -217,6 +219,15 @@ class CalibrationController(QObject):
     @Property(float, notify=baselineMmChanged)
     def baselineMm(self):
         return self._baseline
+
+    @Property(str, notify=lastRunErrorChanged)
+    def lastRunError(self):
+        """Dernier lancement sans nouvelle calibration : l'ancienne reste affichee."""
+        return self._last_run_error
+
+    def _r_file_stamp(self):
+        r = paths.cam_param("R.npy")
+        return r.stat().st_mtime_ns if r.is_file() else None
 
     @Property(float, notify=rotationDegChanged)
     def rotationDeg(self):
@@ -705,6 +716,9 @@ class CalibrationController(QObject):
         self._work_stage = 0
         self._step = 1
         self._phase = "Demarrage…"
+        self._r_stamp = self._r_file_stamp()
+        self._last_run_error = ""
+        self.lastRunErrorChanged.emit()
         self._detail = ""
         self._left_caption = ""
         self._right_caption = ""
@@ -936,6 +950,14 @@ class CalibrationController(QObject):
         self._progress_active = False
         if self._progress < 100 and self._step < 5:
             self._phase = "Arrete ou erreur"
+        if self._r_file_stamp() == self._r_stamp:
+            # Plage vide, calibration rejetee ou arret : rien d'ecrit. Sans ce
+            # message, la page reaffichait l'ancien resultat comme le nouveau.
+            self._last_run_error = (
+                "Calibration non enregistrée : le résultat affiché est le "
+                "précédent. Cause dans le journal."
+            )
+            self.lastRunErrorChanged.emit()
         self.busyChanged.emit()
         self.progressActiveChanged.emit()
         self.phaseChanged.emit()

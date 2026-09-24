@@ -6,6 +6,10 @@ Cette note recense les changements des versions du 24 et du 8 septembre 2026. Le
 
 Ces changements font suite à la première sortie de calibration en mer.
 
+### Dossier de calibration
+
+Une fois installée, l'application rangeait la calibration à côté du programme et y cherchait la fenêtre In/Out, alors que le reste des données se trouve dans le dossier choisi (par défaut Documents\AquaMeasure - Donnees). Le bouton Passer à la mesure restait grisé après une calibration réussie, et la fenêtre était ignorée : deux passages de mire donnaient le même résultat. La calibration utilise désormais le dossier des données. Une calibration qui n'aboutit pas l'indique au lieu de réafficher le résultat précédent.
+
 ### Mires préréglées
 
 Paramètres ChArUco propose deux mires : la petite mire A3 (5×7 cases de 49,5 mm, marqueurs de 37 mm) et la grande mire de 84 cm (20×7 cases de 39 mm, marqueurs de 29 mm), toutes deux en DICT_5X5_100. Un clic remplit colonnes, lignes, tailles et dictionnaire. Les colonnes correspondent aux cases dans la largeur du fichier imprimé ; inversées, aucun coin n'est détecté. La mire choisie est retenue au lancement suivant.

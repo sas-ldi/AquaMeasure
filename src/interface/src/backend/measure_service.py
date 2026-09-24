@@ -207,6 +207,8 @@ class MeasureService(QObject):
         self._ensure_aquameasure_import()
         try:
             from aquameasure import _ensure_stereo_rect_cache, _triangulate_rect_pixels
+
+            paths.bind_engine_root()
         except ImportError as exc:
             self.error.emit(f"Import aquameasure echoue : {exc}")
             return
@@ -240,6 +242,8 @@ class MeasureService(QObject):
             return self._rect_maps
         self._ensure_aquameasure_import()
         from aquameasure import _ensure_stereo_rect_cache
+
+        paths.bind_engine_root()
 
         _, base = self._calib_paths()
         mtx1 = np.load(base / "mtx1.npy")

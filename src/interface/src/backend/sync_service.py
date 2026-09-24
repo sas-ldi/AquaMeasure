@@ -47,6 +47,8 @@ class SyncWorker(QThread):
             sys.path.insert(0, root)
         try:
             from aquameasure import _draw_brightness_curves, detect_flash_frame
+
+            paths.bind_engine_root()
         except ImportError as exc:
             self.error.emit(f"Import aquameasure : {exc}")
             self.finished_ok.emit()

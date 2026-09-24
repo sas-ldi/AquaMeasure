@@ -52,6 +52,19 @@ def app_data_root() -> Path:
     return app_root()
 
 
+def bind_engine_root() -> None:
+    """Fait travailler le moteur (aquameasure.py) dans la racine des donnees.
+
+    Il fige sa racine a l'import (dossier de l'exe) sans lire storage.json :
+    une fois installe, il ecrivait la calibration a cote du programme et
+    lisait la fenetre In/Out la-bas, pendant que l'appli regardait Documents.
+    A appeler avant chaque usage : la racine peut changer dans Parametres.
+    """
+    import aquameasure
+
+    aquameasure._APP_ROOT = str(app_data_root())
+
+
 def camera_params_dir() -> Path:
     return app_data_root() / "camera_parameters"
 

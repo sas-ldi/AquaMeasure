@@ -63,6 +63,23 @@ Column {
     }
 
     property int _drag: 0
+    // Une poignee In/Out montre l'image de coupe pendant le glissement, puis
+    // la vue revient : sinon une seule camera a bouge, l'appli signalait un
+    // decalage « a valider » et le valider plantait le flash sur la poignee.
+    property int _frameBeforeTrim: -1
+
+    function _startTrim(kind, frame) {
+        _drag = kind
+        _frameBeforeTrim = currentFrame
+        seekRequested(frame)
+    }
+
+    function _endTrim() {
+        if (_frameBeforeTrim >= 0)
+            seekRequested(_frameBeforeTrim)
+        _frameBeforeTrim = -1
+        _drag = 0
+    }
 
     component TrimHandle: Item {
         id: h
@@ -312,16 +329,13 @@ Column {
                 isIn: true
                 accent: Theme.markIn
                 active: handleInMa.containsMouse || handleInMa.pressed || _drag === 1
-                z: 10
+                z: 11
                 MouseArea {
                     id: handleInMa
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.SizeHorCursor
-                    onPressed: {
-                        _drag = 1
-                        seekRequested(inFrame)
-                    }
+                    onPressed: _startTrim(1, inFrame)
                     onPositionChanged: (mouse) => {
                         if (_drag !== 1) return
                         const bx = mapToItem(bar, mouse.x, 0).x
@@ -329,7 +343,7 @@ Column {
                         inMarkerMoved(f)
                         seekRequested(f)
                     }
-                    onReleased: _drag = 0
+                    onReleased: _endTrim()
                 }
             }
 
@@ -339,16 +353,13 @@ Column {
                 isIn: false
                 accent: Theme.markOut
                 active: handleOutMa.containsMouse || handleOutMa.pressed || _drag === 2
-                z: 10
+                z: 11
                 MouseArea {
                     id: handleOutMa
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.SizeHorCursor
-                    onPressed: {
-                        _drag = 2
-                        seekRequested(_outBound)
-                    }
+                    onPressed: _startTrim(2, _outBound)
                     onPositionChanged: (mouse) => {
                         if (_drag !== 2) return
                         const barX = mapToItem(bar, mouse.x, 0).x
@@ -356,7 +367,7 @@ Column {
                         outMarkerMoved(f)
                         seekRequested(f)
                     }
-                    onReleased: _drag = 0
+                    onReleased: _endTrim()
                 }
             }
 
@@ -364,7 +375,9 @@ Column {
                 x: bar.x + frameToX(pinFrame) - width / 2
                 anchors.verticalCenter: bar.verticalCenter
                 active: pinMa.containsMouse || pinMa.pressed || _drag === 3
-                z: 11
+                // Sous les poignees In/Out : superposes (0 au chargement), on
+                // attrapait le flash en croyant saisir le In.
+                z: 10
                 MouseArea {
                     id: pinMa
                     anchors.fill: parent

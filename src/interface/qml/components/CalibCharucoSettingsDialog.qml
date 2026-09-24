@@ -56,7 +56,7 @@ Popup {
             muted: true
             wrapMode: Text.WordWrap
             font.pixelSize: Theme.fontCaption
-            text: qsTr("Cible physique de la mire ChArUco. Identique à celle imprimée et visible dans les vidéos.")
+            text: qsTr("Choisissez la mire filmée. En saisie manuelle : colonnes = cases dans la largeur du fichier imprimé.")
         }
 
         GridLayout {
@@ -64,6 +64,25 @@ Popup {
             columns: 2
             columnSpacing: Theme.spaceLg
             rowSpacing: Theme.spaceMd
+
+            AppLabel {
+                text: qsTr("Mire")
+                Layout.fillWidth: true
+                verticalAlignment: Text.AlignVCenter
+            }
+            AppComboBox {
+                id: presetBox
+                objectName: "charucoPresetBox"
+                // Dernier choix = réglages saisis à la main.
+                readonly property var ids: Settings.charucoPresets.map(p => p.id).concat([""])
+                Layout.preferredWidth: 220
+                Layout.alignment: Qt.AlignRight
+                Layout.fillWidth: false
+                model: Settings.charucoPresets.map(p => p.label).concat([qsTr("Personnalisée")])
+                currentIndex: ids.indexOf(Settings.charucoPresetId)
+                enabled: !blocked
+                onActivated: Settings.applyCharucoPreset(ids[currentIndex])
+            }
 
             AppLabel {
                 text: qsTr("Colonnes (X)")

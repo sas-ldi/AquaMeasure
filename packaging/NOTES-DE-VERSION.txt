@@ -4,26 +4,46 @@ AQUAMEASURE - NOTES DE VERSION
 ----------
 Retours de la première sortie en mer.
 
-- Calibration : l'aperçu de détection ne montre plus l'image de la
-  calibration précédente au lancement. Il restait affiché jusqu'à la
-  première détection et laissait croire que l'ancienne vidéo était
-  utilisée. Le calcul, lui, portait déjà sur la bonne vidéo.
-- Calibration : sous « Rotation relative », l'angle entre les deux
-  caméras est maintenant décomposé en horizontal, vertical et roulis.
-  Sur un support fixe, l'écartement prévu doit se retrouver dans la part
-  horizontale, le vertical et le roulis restant proches de zéro. Comparer
-  ces valeurs d'un passage de mire à l'autre montre si la calibration est
-  stable.
+Calibration
+- Choix de la mire en un clic (Paramètres ChArUco > Mire) : « Petite mire
+  A3 (5×7) » ou « Grande mire 84 cm (20×7) ». Colonnes, lignes, tailles et
+  dictionnaire sont remplis sans risque d'inversion. La mire choisie est
+  retenue au prochain lancement (elle revenait avant à la petite mire).
+- Sous « Rotation relative », l'angle entre les deux caméras est détaillé
+  en horizontal, vertical et roulis. Sur un support fixe, l'écartement
+  prévu se lit dans la part horizontale ; vertical et roulis restent
+  proches de zéro.
+- L'aperçu de détection ne montre plus l'image de la calibration
+  précédente au lancement.
 
+Synchronisation
+- La fenêtre In/Out est enregistrée dès qu'on lâche une poignée : la
+  calibration utilise toujours la fenêtre affichée. Le bouton
+  « Enregistrer In-Out » reste disponible.
+- En chargeant une autre paire de vidéos (par exemple l'extrait d'un seul
+  passage de mire), la fenêtre repart sur la vidéo entière et l'ancienne
+  synchro est effacée. Elles venaient avant de la paire précédente.
+- Déplacer une poignée In/Out ne fait plus proposer de « nouveau
+  décalage » à valider : le valider plaçait le flash sur la poignée et
+  faussait la synchro. La poignée In/Out passe au-dessus de celle du flash.
+
+Sessions
+- Plus de bouton « Enregistrer session » : lieu, titre, date et notes
+  s'enregistrent en quittant le champ.
+- La dernière session est rouverte au démarrage. Les vidéos ouvertes
+  rejoignent la session active, ou rouvrent la session qui les contient
+  déjà. Remplacer une seule des deux vidéos met la prise à jour.
+- Page Sessions : « Déplacer vers… » range une prise dans une autre
+  session, avec ses mesures.
+- Le décalage de synchro d'une prise n'est plus écrasé à chaque
+  enregistrement ; refaire la synchro met la prise à jour.
+
+Installation
 - Nouvelle édition légère (environ 900 Mo au lieu de 1,7 Go) pour les
-  postes à faible débit : elle embarque la suite Fishial (détection,
-  classification d'espèce) et les petits détecteurs. Les autres modèles
-  s'ajoutent si besoin depuis l'onglet Modèles IA. Installée par-dessus
-  une version précédente, elle ne supprime ni les modèles déjà présents
-  ni les données (sessions, mesures, calibrations).
-
-Rappel : la fenêtre choisie dans l'onglet Synchronisation n'est prise en
-compte par la calibration qu'après « Enregistrer In-Out ».
+  postes à faible débit : suite Fishial (détection, classification
+  d'espèce) et petits détecteurs. Les autres modèles s'ajoutent depuis
+  l'onglet Modèles IA. Installée par-dessus une version précédente, elle
+  ne supprime ni les modèles déjà présents ni les données.
 
 2026.09.23
 ----------

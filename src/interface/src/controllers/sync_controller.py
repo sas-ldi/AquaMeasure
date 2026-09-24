@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from PySide6.QtCore import Property, QObject, QTimer, Qt, Signal, Slot
 from PySide6.QtWidgets import QFileDialog
 
@@ -38,6 +40,8 @@ class SyncController(QObject):
     rightRoiChanged = Signal()
     trimDirtyChanged = Signal()
     syncDirtyChanged = Signal()
+    # Synchro appliquee (sync_frames.npy ecrit) pour la paire (gauche, droite).
+    syncApplied = Signal(str, str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -86,6 +90,11 @@ class SyncController(QObject):
         self._saved_trim: tuple[int, int, int, int] | None = None
         self._trim_dirty = False
         self._sync_dirty = False
+        # Une poignee glissee emet a chaque image : n'ecrire qu'au repos.
+        self._trim_timer = QTimer(self)
+        self._trim_timer.setSingleShot(True)
+        self._trim_timer.setInterval(400)
+        self._trim_timer.timeout.connect(self._flush_trim)
 
         for signal in (
             self.leftInFrameChanged,
@@ -421,6 +430,8 @@ class SyncController(QObject):
         self.seekLeft(lf)
         self.seekRight(rf)
         self._set_step(2)
+        # Le service a deja ecrit sync_frames.npy et videos.txt.
+        self.syncApplied.emit(self._left, self._right)
 
     def _on_preview(self, image_id: str, qimg):
         if self._images:
@@ -473,6 +484,7 @@ class SyncController(QObject):
         self.leftOutFrameChanged.emit()
         self.leftPinFrameChanged.emit()
         self.videosReadyChanged.emit()
+        self._check_pair_after_left_change(meta.valid)
 
     def _refresh_right_meta(self):
         meta = probe_video(self._right)
@@ -496,8 +508,40 @@ class SyncController(QObject):
             self._load_persisted_trim()
             self._load_persisted_roi()
 
+    def _check_pair_after_left_change(self, valid: bool) -> None:
+        # Changer la seule video gauche change aussi la paire : meme controle
+        # que pour la droite, avant que saveCurrentVideos reecrive videos.txt.
+        if valid and self._right_fc > 0:
+            self._load_persisted_trim()
+
+    def _is_saved_pair(self) -> bool:
+        """La paire chargee est-elle celle que decrivent trim/sync sur disque ?"""
+        p = paths.cam_param("videos.txt")
+        if not p.is_file():
+            return True
+        saved = [s.strip() for s in p.read_text(encoding="utf-8").splitlines()[:2]]
+        norm = lambda s: str(Path(s).resolve()).lower() if s else ""  # noqa: E731
+        return [norm(s) for s in saved] == [norm(self._left), norm(self._right)]
+
     def _load_persisted_trim(self):
         self._saved_trim = None
+        if not self._is_saved_pair():
+            # Fenetre et synchro decrivent l'ancienne paire : les reprendre
+            # sur une autre video (ex. extrait d'un seul passage de mire)
+            # tronquait la fenetre et faussait le decalage.
+            paths.cam_param("sync_frames.npy").unlink(missing_ok=True)
+            self._sync_offset = 0
+            self.syncOffsetChanged.emit()
+            self._set_step(0)
+            # Fenetre complete des deux cotes, pas seulement du cote change.
+            self._left_in, self._left_out = 0, max(0, self._left_fc - 1)
+            self._right_in, self._right_out = 0, max(0, self._right_fc - 1)
+            for signal in (self.leftInFrameChanged, self.leftOutFrameChanged,
+                           self.rightInFrameChanged, self.rightOutFrameChanged):
+                signal.emit()
+            self.saveTrim()
+            self._refresh_sync_dirty()
+            return
         trim = paths.cam_param("trim_frames.npy")
         if trim.is_file():
             try:
@@ -571,6 +615,8 @@ class SyncController(QObject):
 
     @Slot()
     def saveCurrentVideos(self):
+        # Appele au passage vers la calibration : rien ne doit rester en attente.
+        self._flush_trim()
         if self._left and self._right:
             self._service.save_videos_list(self._left, self._right)
 
@@ -580,12 +626,15 @@ class SyncController(QObject):
         if not p.is_file():
             return
         lines = p.read_text(encoding="utf-8").splitlines()
+        # Les deux chemins d'abord : la paire comparee a videos.txt doit etre
+        # la paire enregistree, jamais un melange ancienne droite / gauche lue.
+        if len(lines) > 1 and lines[1].strip():
+            self._right = lines[1].strip()
         if lines and lines[0].strip():
             self._left = lines[0].strip()
             self.leftVideoChanged.emit()
             self._refresh_left_meta()
         if len(lines) > 1 and lines[1].strip():
-            self._right = lines[1].strip()
             self.rightVideoChanged.emit()
             self._refresh_right_meta()
         self.bothVideosSelectedChanged.emit()
@@ -645,6 +694,7 @@ class SyncController(QObject):
         self.seekLeft(left_frame)
         self.seekRight(right_frame)
         self._set_step(2)
+        self.syncApplied.emit(self._left, self._right)
         self._logs.append(
             f"Sync manuelle : offset {self._sync_offset:+d} frames "
             f"(G f{left_frame}, D f{right_frame})"
@@ -691,15 +741,28 @@ class SyncController(QObject):
     def stepRight(self, delta: int):
         self.seekRight(self._right_cur + delta)
 
+    def _autosave_trim(self) -> None:
+        # La calibration ne lit que trim_frames.npy : une poignee deplacee
+        # sans « Enregistrer In-Out » faisait calibrer sur l'ancienne fenetre.
+        if self._left_fc > 0 and self._right_fc > 0:
+            self._trim_timer.start()
+
+    def _flush_trim(self) -> None:
+        self._trim_timer.stop()
+        if self._trim_dirty and self._left_fc > 0 and self._right_fc > 0:
+            self.saveTrim()
+
     @Slot(int)
     def setLeftIn(self, frame: int):
         self._left_in = frame
         self.leftInFrameChanged.emit()
+        self._autosave_trim()
 
     @Slot(int)
     def setLeftOut(self, frame: int):
         self._left_out = frame
         self.leftOutFrameChanged.emit()
+        self._autosave_trim()
 
     @Slot(int)
     def setLeftPin(self, frame: int):
@@ -710,11 +773,13 @@ class SyncController(QObject):
     def setRightIn(self, frame: int):
         self._right_in = frame
         self.rightInFrameChanged.emit()
+        self._autosave_trim()
 
     @Slot(int)
     def setRightOut(self, frame: int):
         self._right_out = frame
         self.rightOutFrameChanged.emit()
+        self._autosave_trim()
 
     @Slot(int)
     def setRightPin(self, frame: int):

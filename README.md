@@ -30,6 +30,20 @@
 **Comportement** décrit une action à un instant ou sur une durée.
 **Trajectoire** suit le déplacement du poisson ; on peut ensuite y pointer des bouchées ou d’autres actions.
 
+## Nouveautés du 24 septembre 2026
+
+Retours de la première sortie en mer.
+
+| Où | Ce qui change |
+|---|---|
+| Calibration | Choix de la mire en un clic : petite mire A3 (5×7) ou grande mire 84 cm (20×7). Le choix est retenu d'un lancement à l'autre. |
+| Calibration | La rotation entre les deux caméras est détaillée en horizontal, vertical et roulis. |
+| Synchronisation | La fenêtre In/Out s'enregistre toute seule. Changer de paire de vidéos repart sur la vidéo entière et efface l'ancienne synchro. |
+| Sessions | Plus de bouton Enregistrer : les champs s'enregistrent seuls, la dernière session se rouvre et les vidéos s'y rangent. Une prise peut changer de session. |
+| Installation | Édition légère d'environ 900 Mo avec la suite Fishial, pour les connexions lentes. |
+
+Le détail figure dans [Évolutions de septembre 2026](docs/evolutions/EVOLUTIONS_2026_09.md#version-du-24-septembre-2026).
+
 ## Les manuels
 
 | Guide | Thème | Word | PDF |

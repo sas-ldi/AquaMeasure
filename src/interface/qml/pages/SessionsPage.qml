@@ -352,12 +352,86 @@ Item {
                                             font.pixelSize: Theme.fzXs
                                             elide: Text.ElideMiddle
                                         }
-                                        GhostButton {
-                                            text: qsTr("Ouvrir cette prise")
-                                            small: true
-                                            requires: modelData.left.available
-                                            disabledReason: qsTr("La vidéo gauche est introuvable sur ce poste.")
-                                            onClicked: Sessions.openPairAt(index)
+                                        RowLayout {
+                                            spacing: Theme.s2
+                                            GhostButton {
+                                                text: qsTr("Ouvrir cette prise")
+                                                small: true
+                                                requires: modelData.left.available
+                                                disabledReason: qsTr("La vidéo gauche est introuvable sur ce poste.")
+                                                onClicked: Sessions.openPairAt(index)
+                                            }
+                                            GhostButton {
+                                                id: moveButton
+                                                objectName: "movePairButton"
+                                                text: qsTr("Déplacer vers…")
+                                                small: true
+                                                visible: Sessions.moveTargets.length > 0
+                                                tooltipText: qsTr("Range cette prise et ses annotations dans une autre session.")
+                                                onClicked: {
+                                                    const pos = moveButton.mapToItem(movePopup.parent, 0, moveButton.height)
+                                                    movePopup.x = Math.min(pos.x, movePopup.parent.width - movePopup.width - Theme.s2)
+                                                    movePopup.y = pos.y + Theme.s1
+                                                    movePopup.open()
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Même menu que les champs du volet latéral.
+                                    Popup {
+                                        id: movePopup
+                                        readonly property int pairIndex: index
+                                        parent: Overlay.overlay
+                                        modal: true
+                                        focus: true
+                                        width: 240
+                                        padding: Theme.s2
+                                        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+                                        background: Rectangle {
+                                            color: Theme.elevated
+                                            radius: Theme.radiusSm
+                                            border.color: Theme.border
+                                            border.width: 1
+                                        }
+
+                                        contentItem: ColumnLayout {
+                                            spacing: Theme.s1
+
+                                            Repeater {
+                                                model: Sessions.moveTargets
+
+                                                Rectangle {
+                                                    Layout.fillWidth: true
+                                                    implicitHeight: 36
+                                                    radius: Theme.radiusSm
+                                                    color: targetMa.containsMouse ? Theme.accentSoft : "transparent"
+
+                                                    Text {
+                                                        anchors.fill: parent
+                                                        anchors.leftMargin: Theme.s3
+                                                        anchors.rightMargin: Theme.s3
+                                                        text: modelData.name
+                                                        verticalAlignment: Text.AlignVCenter
+                                                        font.family: Theme.fontFamily
+                                                        font.pixelSize: Theme.fzSm
+                                                        color: Theme.text
+                                                        elide: Text.ElideRight
+                                                    }
+
+                                                    MouseArea {
+                                                        id: targetMa
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: {
+                                                            movePopup.close()
+                                                            Sessions.movePairTo(movePopup.pairIndex, modelData.session_id)
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -426,26 +500,10 @@ Item {
                                 text: qsTr("Ouvrir cette session")
                                 requires: Sessions.selectedLeftAvailable
                                 disabledReason: Sessions.selectedLeftPath.length === 0
-                                    ? qsTr("Cette session n'a pas encore de vidéos : chargez la paire puis cliquez « Attacher la paire chargée ».")
+                                    ? qsTr("Cette session n'a pas encore de vidéos : chargez une paire dans Mesure.")
                                     : qsTr("La vidéo n'est pas accessible depuis ce poste : rebranchez le disque où elle est archivée.")
                                 tooltipText: qsTr("Charge la paire de vidéos et le registre, puis ouvre la page Mesure.")
                                 onClicked: Sessions.openSelectedSession()
-                            }
-
-                            GhostButton {
-                                fill: true
-                                Layout.fillWidth: true
-                                // L'attache calcule l'empreinte des deux
-                                // vidéos : plusieurs Go la première fois.
-                                text: Sessions.busy
-                                    ? qsTr("Enregistrement de la paire…")
-                                    : qsTr("Attacher la paire chargée")
-                                requires: Measure.leftVideo.length > 0 && !Sessions.busy
-                                disabledReason: Sessions.busy
-                                    ? qsTr("Attache en cours : l'empreinte des vidéos est en train d'être calculée.")
-                                    : qsTr("Aucune paire de vidéos chargée : passez par Synchronisation, ou menu Fichier → Charger les vidéos.")
-                                tooltipText: qsTr("Ajoute les vidéos actuellement chargées à cette session. Chaque nouvelle paire conserve sa propre synchronisation et sa calibration. Une vidéo ne peut appartenir qu'à une seule session.")
-                                onClicked: Sessions.attachCurrentPair()
                             }
 
                             RowLayout {

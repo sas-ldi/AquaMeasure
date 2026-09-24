@@ -57,6 +57,16 @@ MAX_JUMP_FRAMES = 9999
 MAX_JUMP_SECONDS = 600.0
 
 
+# Mires imprimees du projet (docs/mires_test). Colonnes = cases dans la
+# largeur du fichier imprime : inversees (7x20, 7x5), OpenCV ne detecte aucun coin.
+CHARUCO_PRESETS: dict[str, dict] = {
+    "a3": {"label": "Petite mire A3 (5×7)", "sq": (5, 7), "square_mm": 49.5,
+           "marker_mm": 37.0, "dict": "DICT_5X5_100"},
+    "long": {"label": "Grande mire 84 cm (20×7)", "sq": (20, 7), "square_mm": 39.0,
+             "marker_mm": 29.0, "dict": "DICT_5X5_100"},
+}
+
+
 class SettingsController(QObject):
     proModeChanged = Signal()
     charucoSettingsChanged = Signal()
@@ -80,6 +90,8 @@ class SettingsController(QObject):
         self._transport_jump_seconds = DEFAULT_JUMP_SECONDS
         self._load_calib_scan_settings()
         self._load_ui_settings()
+        # La mire etait oubliee a chaque redemarrage.
+        self.charucoSettingsChanged.connect(self._save_calib_scan_settings)
 
     def _apply_preset_values(self, preset: dict) -> None:
         self._max_views = int(preset["max_views"])
@@ -106,6 +118,8 @@ class SettingsController(QObject):
             "camera_scale": self._calib_camera_scale,
             "min_corners": self._min_corners,
             "baseline_mm": self._baseline_mm,
+            "charuco": {"sq": [self._sq_x, self._sq_y], "square_mm": self._square_mm,
+                        "marker_mm": self._marker_mm, "dict": self._dict_name},
         }
         try:
             paths.cam_param(_CALIB_SETTINGS_FILE).write_text(
@@ -123,6 +137,15 @@ class SettingsController(QObject):
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             return
+        board = data.get("charuco")
+        if isinstance(board, dict):
+            try:
+                self._sq_x, self._sq_y = (int(v) for v in board["sq"])
+                self._square_mm = float(board["square_mm"])
+                self._marker_mm = float(board["marker_mm"])
+                self._dict_name = str(board["dict"])
+            except (KeyError, TypeError, ValueError):
+                pass
         preset_id = data.get("preset_id", "fast")
         if preset_id in CALIB_QUALITY_PRESETS:
             self._calib_quality_preset = preset_id
@@ -481,21 +504,38 @@ class SettingsController(QObject):
             f"rafale {self._calib_dense} · pas rafale 1/{self._calib_dense_stride}"
         )
 
+    @Property(str, notify=charucoSettingsChanged)
+    def charucoPresetId(self):
+        """Mire du projet qui correspond aux reglages, ou "" (personnalisee)."""
+        for pid, p in CHARUCO_PRESETS.items():
+            if ((self._sq_x, self._sq_y) == p["sq"]
+                    and abs(self._square_mm - p["square_mm"]) < 0.01
+                    and abs(self._marker_mm - p["marker_mm"]) < 0.01
+                    and self._dict_name == p["dict"]):
+                return pid
+        return ""
+
+    @Property(list, constant=True)
+    def charucoPresets(self):
+        return [{"id": pid, "label": p["label"]} for pid, p in CHARUCO_PRESETS.items()]
+
     @Property(bool, notify=charucoSettingsChanged)
     def charucoUsingDefaults(self):
-        return (
-            self._sq_x == 5
-            and self._sq_y == 7
-            and abs(self._square_mm - 49.5) < 0.01
-            and abs(self._marker_mm - 37.0) < 0.01
-        )
+        return self.charucoPresetId == "a3"
+
+    @Slot(str)
+    def applyCharucoPreset(self, preset_id: str):
+        p = CHARUCO_PRESETS.get(preset_id)
+        if p is None:
+            return
+        self._sq_x, self._sq_y = p["sq"]
+        self._square_mm, self._marker_mm = p["square_mm"], p["marker_mm"]
+        self._dict_name = p["dict"]
+        self.charucoSettingsChanged.emit()
 
     @Slot()
     def resetCharucoToDefaults(self):
-        self._sq_x, self._sq_y = 5, 7
-        self._square_mm, self._marker_mm = 49.5, 37.0
-        self._dict_name = "DICT_5X5_100"
-        self.charucoSettingsChanged.emit()
+        self.applyCharucoPreset("a3")
 
     @Slot()
     def resetCalibScanToDefaults(self):

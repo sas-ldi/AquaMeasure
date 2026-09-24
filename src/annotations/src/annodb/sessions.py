@@ -298,6 +298,7 @@ def attach_media_pair(
     calibration_sha256: Optional[str] = None,
     calibration_id: Optional[str] = None,
     activate: bool = True,
+    refreeze_offset: bool = False,
 ) -> Optional[CaptureSession]:
     """Ajoute une prise à la session et **fige** sa synchro.
 
@@ -345,24 +346,23 @@ def attach_media_pair(
             right_media_id=right_media_id,
         )
         db.add(existing)
-    if frame_offset is not None:
+    # Une prise déjà attachée garde la synchro et la calibration figées à sa
+    # première attache : rouvrir la paire ne les réécrit pas. Seul un offset
+    # donné explicitement (`refreeze_offset`) remplace l'offset figé.
+    if frame_offset is not None and (refreeze_offset or existing.frame_offset is None):
         existing.frame_offset = int(frame_offset)
-    if calibration_profile is not None:
+    calibration_written = calibration_id is not None and existing.calibration_id is None
+    if calibration_profile is not None and existing.calibration_profile is None:
         existing.calibration_profile = calibration_profile
-    if calibration_sha256 is not None:
+    if calibration_sha256 is not None and existing.calibration_sha256 is None:
         existing.calibration_sha256 = calibration_sha256
-    if calibration_id is not None:
+    if calibration_written:
         existing.calibration_id = calibration_id
     existing.updated_at = datetime.utcnow()
 
     # Pointeur compatible vers la prise courante.
-    row.left_media_id = left_media_id
-    row.right_media_id = right_media_id
-    row.frame_offset = existing.frame_offset
-    row.calibration_profile = existing.calibration_profile
-    row.calibration_sha256 = existing.calibration_sha256
-    row.calibration_id = existing.calibration_id
-    if calibration_id is not None:
+    _point_legacy_to(row, existing)
+    if calibration_written:
         for media_id in (left_media_id, right_media_id):
             media = db.get(MediaAsset, media_id) if media_id else None
             if media is not None:
@@ -372,6 +372,89 @@ def attach_media_pair(
     row.updated_at = datetime.utcnow()
     db.flush()
     return row
+
+
+def _point_legacy_to(row: CaptureSession, pair: Optional[SessionMediaPair]) -> None:
+    """Recopie une prise dans les anciennes colonnes de `sessions`."""
+    row.left_media_id = pair.left_media_id if pair else None
+    row.right_media_id = pair.right_media_id if pair else None
+    row.frame_offset = pair.frame_offset if pair else None
+    row.calibration_profile = pair.calibration_profile if pair else None
+    row.calibration_sha256 = pair.calibration_sha256 if pair else None
+    row.calibration_id = pair.calibration_id if pair else None
+    row.updated_at = datetime.utcnow()
+
+
+def replace_pair_media(
+    db: Session,
+    pair: SessionMediaPair,
+    *,
+    left_media_id: Optional[str] = None,
+    right_media_id: Optional[str] = None,
+    frame_offset: Optional[int] = None,
+) -> CaptureSession:
+    """Change une vidéo d'une prise et pose son offset (None si inconnu).
+
+    L'ancien offset décrivait l'ancienne paire : il n'est jamais gardé.
+    """
+    if left_media_id:
+        pair.left_media_id = left_media_id
+    if right_media_id:
+        pair.right_media_id = right_media_id
+    pair.frame_offset = None if frame_offset is None else int(frame_offset)
+    pair.updated_at = datetime.utcnow()
+    row = db.get(CaptureSession, pair.session_id)
+    _point_legacy_to(row, pair)
+    db.flush()
+    return row
+
+
+def _stamp_media(db: Session, row: CaptureSession, media_ids: tuple) -> None:
+    """Recopie lieu, titre, notes et date de la session sur ses médias."""
+    for media_id in media_ids:
+        media = db.get(MediaAsset, media_id) if media_id else None
+        if media is not None:
+            media.site = row.site
+            media.session_title = row.name
+            media.notes = row.notes
+            media.session_date = row.session_date
+
+
+def move_media_pair(
+    db: Session, pair_id: str, target_session_id: str,
+) -> Optional[CaptureSession]:
+    """Déplace une prise, avec sa synchro figée, vers une autre session.
+
+    Les annotations suivent d'elles-mêmes : elles sont liées aux médias. Les
+    pointeurs de compatibilité des deux sessions sont recalés sur leur
+    dernière prise, sinon la migration recréerait la prise partie.
+    """
+    pair = db.get(SessionMediaPair, pair_id)
+    target = db.get(CaptureSession, target_session_id)
+    if pair is None or target is None:
+        return None
+    if pair.session_id == target.id:
+        return target
+    source = db.get(CaptureSession, pair.session_id)
+    current_max = db.scalar(
+        select(func.max(SessionMediaPair.position)).where(
+            SessionMediaPair.session_id == target.id
+        )
+    )
+    pair.session_id = target.id
+    pair.position = (int(current_max) + 1) if current_max is not None else 0
+    pair.updated_at = datetime.utcnow()
+    db.flush()
+    for row in (source, target):
+        if row is not None:
+            remaining = media_pairs(db, row.id)
+            _point_legacy_to(row, remaining[-1] if remaining else None)
+    if pair.left_media_id and target.status == STATUS_PLANNED:
+        target.status = STATUS_ACTIVE
+    # L'export d'abondance lit lieu et date sur les médias.
+    _stamp_media(db, target, (pair.left_media_id, pair.right_media_id))
+    db.flush()
+    return target
 
 
 def find_session_for_media(db: Session, media_id: str) -> Optional[CaptureSession]:

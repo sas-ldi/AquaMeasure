@@ -90,9 +90,12 @@ class AppController(QObject):
             self._measure.logs.append(self._calib_migration_note)
 
         self._sync.syncOffsetChanged.connect(self.refreshProjectState)
+        self._sync.syncApplied.connect(self._sessions.refreezePairOffset)
         self._calib.calibrationComplete.connect(self.refreshProjectState)
         self._calib.calibrationCancelled.connect(self.refreshProjectState)
         self.refreshProjectState()
+        # La session active survit au redémarrage.
+        self._sessions.restoreLastSession()
 
     @Property(int, notify=currentPageChanged)
     def currentPage(self):

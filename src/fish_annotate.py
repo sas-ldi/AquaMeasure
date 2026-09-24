@@ -618,6 +618,17 @@ def update_session(session_id: str, **fields: Any) -> Optional[dict[str, Any]]:
         return session_as_dict(session, row) if row else None
 
 
+def get_session(session_id: str) -> Optional[dict[str, Any]]:
+    from src.annodb.connection import session_scope
+    from src.annodb.models import CaptureSession
+    from src.annodb.sessions import session_as_dict
+
+    _ensure_db()
+    with session_scope() as session:
+        row = session.get(CaptureSession, session_id)
+        return session_as_dict(session, row, with_stats=False) if row else None
+
+
 def delete_session(session_id: str) -> bool:
     from src.annodb.connection import session_scope
     from src.annodb.sessions import delete_session as _delete
@@ -654,15 +665,15 @@ def attach_media_pair(
     """
     from src.annodb.calibrations import register_calibration
     from src.annodb.connection import session_scope
-    from src.annodb.frame_ref import timeline_offset
     from src.annodb.models import MediaAsset
     from src.annodb.sessions import attach_media_pair as _attach
     from src.annodb.sessions import session_as_dict
 
     left_id = resolve_media_id(left_path, project=project, create=True) if left_path else None
     right_id = resolve_media_id(right_path, project=project, create=True) if right_path else None
-    if frame_offset is None:
-        frame_offset = timeline_offset()
+    explicit_offset = frame_offset is not None
+    if not explicit_offset:
+        frame_offset = sync_offset_for_pair(left_path, right_path)
     profile = active_calibration()
     calibration_profile = calibration_profile or profile.get("profile_name")
     calibration_sha256 = calibration_sha256 or profile.get("calibration_sha256")
@@ -694,6 +705,7 @@ def attach_media_pair(
             calibration_profile=calibration_profile,
             calibration_sha256=calibration_sha256,
             calibration_id=calibration_id,
+            refreeze_offset=explicit_offset,
         )
         if row is not None and not (row.operator or "").strip():
             # La session devient active : c'est le moment ou quelqu'un y
@@ -701,6 +713,111 @@ def attach_media_pair(
             from src.annodb.annotators import current_author_name
 
             row.operator = current_author_name(session)
+        return session_as_dict(session, row) if row else None
+
+
+def _same_path(a: str, b: str) -> bool:
+    if not a or not b:
+        return False
+    return str(Path(a).resolve()).lower() == str(Path(b).resolve()).lower()
+
+
+def sync_offset_for_pair(left_path: str, right_path: str) -> Optional[int]:
+    """Offset de `sync_frames.npy`, seulement s'il decrit CETTE paire.
+
+    `videos.txt` dit quelle paire a ete synchronisee ; une autre paire recoit
+    None (offset inconnu) plutot que le decalage d'une autre prise.
+    """
+    from src.annodb.frame_ref import timeline_offset
+    from src.annodb.rectify import camera_params_dir
+
+    root = camera_params_dir()
+    txt = root / "videos.txt" if root is not None else None
+    if txt is None or not txt.is_file():
+        return None
+    saved = [line.strip() for line in txt.read_text(encoding="utf-8").splitlines()[:2]]
+    if len(saved) < 2 or not (_same_path(saved[0], left_path) and _same_path(saved[1], right_path)):
+        return None
+    return timeline_offset(root)
+
+
+def join_loaded_pair(
+    active_session_id: str,
+    left_path: str,
+    right_path: str,
+    *,
+    project: str = REGISTRY_PROJECT,
+    stereo_rmse: Optional[float] = None,
+) -> dict[str, Any]:
+    """La session suit la paire chargee, sinon la paire rejoint la session active.
+
+    `action` vaut : `open` (paire deja rangee), `replaced` (une video d'une
+    prise a change), `attached` (paire libre ajoutee a la session active),
+    `conflict` (les deux videos sont dans des prises differentes) ou `none`.
+    Calcule les empreintes : **a appeler hors du thread UI**.
+    """
+    from src.annodb.connection import session_scope
+    from src.annodb.models import CaptureSession, SessionMediaPair
+    from src.annodb.sessions import pair_for_media, replace_pair_media, session_as_dict
+
+    left_id = resolve_media_id(left_path, project=project, create=True)
+    right_id = resolve_media_id(right_path, project=project, create=True)
+    _ensure_db()
+    with session_scope() as session:
+        left_pair = pair_for_media(session, left_id)
+        right_pair = pair_for_media(session, right_id)
+        pair = left_pair or right_pair
+        if pair is not None:
+            if left_pair is not None and right_pair is not None:
+                if left_pair.id != right_pair.id:
+                    return {"action": "conflict", "session": None}
+                row = session.get(CaptureSession, getattr(pair, "session_id", pair.id))
+                return {"action": "open", "session": session_as_dict(session, row)}
+            if not isinstance(pair, SessionMediaPair):
+                return {"action": "conflict", "session": None}
+            row = replace_pair_media(
+                session, pair, left_media_id=left_id, right_media_id=right_id,
+                frame_offset=sync_offset_for_pair(left_path, right_path),
+            )
+            return {"action": "replaced", "session": session_as_dict(session, row)}
+    if not active_session_id:
+        return {"action": "none", "session": None}
+    row = attach_media_pair(
+        active_session_id, left_path, right_path, project=project, stereo_rmse=stereo_rmse,
+    )
+    return {"action": "attached" if row else "none", "session": row}
+
+
+def refreeze_pair_offset(left_path: str, right_path: str) -> Optional[dict[str, Any]]:
+    """Apres une synchro, pose le nouvel offset sur la prise de cette paire."""
+    from src.annodb.connection import session_scope
+    from src.annodb.models import SessionMediaPair
+    from src.annodb.sessions import pair_for_media, replace_pair_media, session_as_dict
+
+    offset = sync_offset_for_pair(left_path, right_path)
+    if offset is None:
+        return None
+    left_id = resolve_media_id(left_path)
+    right_id = resolve_media_id(right_path)
+    if not left_id or not right_id:
+        return None
+    _ensure_db()
+    with session_scope() as session:
+        pair = pair_for_media(session, left_id)
+        if not isinstance(pair, SessionMediaPair) or pair.right_media_id != right_id:
+            return None
+        return session_as_dict(session, replace_pair_media(session, pair, frame_offset=offset))
+
+
+def move_media_pair(pair_id: str, target_session_id: str) -> Optional[dict[str, Any]]:
+    """Deplace une prise vers une autre session ; rend la session cible."""
+    from src.annodb.connection import session_scope
+    from src.annodb.sessions import move_media_pair as _move
+    from src.annodb.sessions import session_as_dict
+
+    _ensure_db()
+    with session_scope() as session:
+        row = _move(session, pair_id, target_session_id)
         return session_as_dict(session, row) if row else None
 
 

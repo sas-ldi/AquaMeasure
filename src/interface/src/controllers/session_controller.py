@@ -6,6 +6,7 @@ vidéos au fil de la journée. Chaque paire fige sa propre synchronisation.
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import threading
@@ -20,11 +21,15 @@ from src.models.session_rows_model import SessionRowsModel
 from src.util import paths
 from src.util.log_model import LogModel
 
+# Session active mémorisée entre deux lancements (camera_parameters/).
+ACTIVE_SESSION_FILE = "active_session.json"
+
 
 class SessionController(QObject):
     sessionsChanged = Signal()
     statusTextChanged = Signal()
     selectedChanged = Signal()
+    moveTargetsChanged = Signal()
     activeSessionChanged = Signal()
     formChanged = Signal()
     busyChanged = Signal()
@@ -62,6 +67,8 @@ class SessionController(QObject):
         self._measure.rightVideoChanged.connect(self.activeSessionChanged)
         self._measure.leftVideoChanged.connect(self._schedule_auto_attach)
         self._measure.rightVideoChanged.connect(self._schedule_auto_attach)
+        if self._data is not None:
+            self._data.sessionFieldsSaved.connect(self.refresh)
 
     # ── utilitaires ────────────────────────────────────────────────────
 
@@ -256,24 +263,49 @@ class SessionController(QObject):
         except OSError:
             return path
 
+    def _owner_of_loaded_video(self) -> dict | None:
+        """Session qui porte déjà la vidéo gauche chargée, ou None."""
+        import fish_annotate as fa
+
+        self._ensure_fv()
+        if self._data is not None:
+            media_id = self._data.mediaId
+        else:
+            media_id = fa.resolve_media_id(self._measure.leftVideo) or ""
+        return fa.find_session_for_media(media_id) if media_id else None
+
+    def _follow_session(self, owner: dict) -> None:
+        """Rend active la session qui porte déjà les vidéos chargées."""
+        owner_id = str(owner.get("session_id", ""))
+        if owner_id and owner_id != self.selectedId:
+            self._select_by_id(owner_id)
+            self._set_status(
+                f"Session « {owner.get('name', '')} » ouverte (vidéos déjà rattachées)"
+            )
+
     def _schedule_auto_attach(self):
-        """Ajoute automatiquement une nouvelle paire à la session active."""
+        """La session suit la vidéo, sinon la vidéo rejoint la session."""
         if self._auto_attach_scheduled:
             return
         self._auto_attach_scheduled = True
 
         def run():
             self._auto_attach_scheduled = False
-            if (
-                self.selectedId
-                and self._measure.leftVideo
-                and self._measure.rightVideo
-                and Path(self._measure.leftVideo).is_file()
-                and Path(self._measure.rightVideo).is_file()
-                and not self.activePairLoaded
-                and not self._busy
-            ):
+            left = self._measure.leftVideo
+            right = self._measure.rightVideo
+            if not left or self._busy or not self._db_ok:
+                return
+            if right and Path(left).is_file() and Path(right).is_file():
                 self.attachCurrentPair()
+                return
+            # Demi-paire : rien n'est attaché, la session suit la vidéo gauche.
+            try:
+                owner = self._owner_of_loaded_video()
+            except Exception as exc:
+                self._logs.append(f"[!] Sessions : {exc}")
+                return
+            if owner:
+                self._follow_session(owner)
 
         # Les signaux gauche puis droite sont émis pendant un même chargement :
         # attendre le prochain tour évite d'attacher une demi-paire.
@@ -360,6 +392,7 @@ class SessionController(QObject):
             rows = fa.list_sessions_v2()
             self._sessions.set_rows(rows)
             self.sessionsChanged.emit()
+            self.moveTargetsChanged.emit()
             if self.selectedId:
                 idx = self._sessions.index_of(self.selectedId)
                 if idx >= 0:
@@ -386,20 +419,59 @@ class SessionController(QObject):
         data = self._sessions.row_at(row)
         if not data:
             return
+        changed = str(data.get("session_id", "")) != self.selectedId
         self._selected = dict(data)
         self._selected_row = row
         self.selectedChanged.emit()
+        self.moveTargetsChanged.emit()
+        self._remember_session(self.selectedId)
         if self._data is not None:
-            self._data._set_session_id(str(data.get("session_id", "")))
-            self._data.sessionTitle = str(data.get("name", ""))
-            self._data.sessionSite = str(data.get("site", ""))
-            self._data.sessionDate = str(data.get("session_date", ""))
-            self._data.sessionNotes = str(data.get("notes", ""))
+            self._data._apply_session_row(data)
         # Choisir une session la rend active dans toute l'application.
         # Le chargement de la paire reste sur « Ouvrir » : rouvrir des
         # fichiers de plusieurs Go a chaque clic dans la liste serait
         # insupportable.
         self.activeSessionChanged.emit()
+        if changed:
+            # Une paire libre déjà chargée rejoint la session choisie ; une
+            # paire rangée ailleurs ne ramène pas la sélection vers elle.
+            QTimer.singleShot(0, self, lambda: self._join_loaded(follow=False))
+
+    def _select_by_id(self, session_id: str) -> bool:
+        idx = self._sessions.index_of(session_id)
+        if idx < 0:
+            self.refresh()
+            idx = self._sessions.index_of(session_id)
+        if idx >= 0:
+            self.selectSession(idx)
+        return idx >= 0
+
+    def _remember_session(self, session_id: str) -> None:
+        """Mémorise la session active, ou l'oublie si `session_id` est vide."""
+        path = paths.cam_param(ACTIVE_SESSION_FILE)
+        try:
+            if session_id:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps({"session_id": session_id}), encoding="utf-8")
+            else:
+                path.unlink(missing_ok=True)
+        except OSError as exc:
+            self._logs.append(f"[!] Session mémorisée : {exc}")
+
+    @Slot()
+    def restoreLastSession(self):
+        """Rouvre la session active du lancement précédent si elle existe encore."""
+        try:
+            saved = json.loads(
+                paths.cam_param(ACTIVE_SESSION_FILE).read_text(encoding="utf-8")
+            )
+            session_id = str(saved.get("session_id", ""))
+        except (OSError, ValueError, AttributeError):
+            return
+        self.refresh()
+        idx = self._sessions.index_of(session_id) if session_id else -1
+        if idx >= 0:
+            self.selectSession(idx)
 
     @Slot()
     def createSession(self):
@@ -429,11 +501,8 @@ class SessionController(QObject):
             self._measure.resetForNewSession()
             if self._data is not None:
                 self._data.resetForNewSession()
-                self._data._set_session_id(str(created.get("session_id", "")))
-                self._data.sessionTitle = str(created.get("name", ""))
-                self._data.sessionSite = str(created.get("site", ""))
-                self._data.sessionDate = str(created.get("session_date", ""))
-                self._data.sessionNotes = str(created.get("notes", ""))
+                self._data._apply_session_row(created)
+            self._remember_session(str(created.get("session_id", "")))
             self._set_status(
                 f"Session « {created.get('name', '')} » créée - chargez sa première vidéo"
             )
@@ -446,21 +515,25 @@ class SessionController(QObject):
 
     @Slot()
     def attachCurrentPair(self):
-        """Attache la paire de vidéos chargée et fige le décalage de synchro.
+        """Range la paire chargée : sa session devient active, sinon elle
+        rejoint la session active (voir `fa.join_loaded_pair`).
 
         Le travail part dans un **thread** : l'attache calcule l'empreinte
         sha256 intégrale des deux vidéos (plusieurs Go la première fois) et
         gelait l'interface. Les boutons concernés sont grisés via `busy`.
         """
-        if not self.selectedId:
-            self._set_status("Choisissez d'abord une session dans la liste")
-            return
+        self._join_loaded(follow=True)
+
+    def _join_loaded(self, follow: bool) -> None:
         left = self._measure.leftVideo
         right = self._measure.rightVideo
-        if not left:
-            self._set_status(
-                "Chargez d'abord la paire de vidéos (page Mesure ou menu Fichier)"
-            )
+        if not left or not right:
+            if follow:
+                self._set_status(
+                    "Chargez d'abord les deux vidéos (page Mesure ou menu Fichier)"
+                )
+            return
+        if not self._db_ok or not (Path(left).is_file() and Path(right).is_file()):
             return
         if self._busy:
             self._set_status("Attache déjà en cours…")
@@ -468,52 +541,76 @@ class SessionController(QObject):
         payload = {
             "session_id": self.selectedId,
             "left": left,
-            "right": right or "",
+            "right": right,
             "stereo_rmse": paths.stereo_rmse_if_exists(),
         }
         self._set_busy(True)
-        self._set_status("Ajout de la vidéo à la session…")
 
         def worker():
             try:
                 import fish_annotate as fa
 
                 self._ensure_fv()
-                row = fa.attach_media_pair(
+                result = fa.join_loaded_pair(
                     payload["session_id"], payload["left"], payload["right"],
                     stereo_rmse=payload["stereo_rmse"],
                 )
-                self._pairAttached.emit(row or {})
+                self._pairAttached.emit(dict(result, follow=follow))
             except Exception as exc:
                 self._pairFailed.emit(str(exc))
 
         threading.Thread(target=worker, daemon=True).start()
 
-    def _finish_pair_attached(self, row: dict):
+    def _finish_pair_attached(self, result: dict):
         self._set_busy(False)
+        action = result.get("action")
+        row = result.get("session") or {}
+        if action == "conflict":
+            self._set_status("Ces deux vidéos sont dans deux prises différentes")
+            return
+        if action == "open":
+            if result.get("follow", True):
+                self._follow_session(row)
+            return
         if not row:
-            self._set_status("Session introuvable")
             return
         self.refresh()
-        if self._selected_row >= 0:
-            # `refresh()` reconstruit les lignes : re-selectionner pour
-            # que la session active reprenne la paire fraichement attachee.
-            self.selectSession(self._selected_row)
+        self._select_by_id(str(row.get("session_id", "")))
         if self._data is not None:
             # L'offset figé change la lecture des lignes historiques :
             # le contrôleur de données doit relire sa session courante.
             self._data.loadSessionMetadata()
+            # Les médias reçoivent le lieu et la date de la session.
+            self._data.saveSessionFields()
         self.activeSessionChanged.emit()
         offset = row.get("frame_offset")
         detail = f" · décalage figé à {offset:+d} img" if offset is not None else ""
-        if not row.get("right_media_id"):
-            detail += " · vidéo droite manquante"
         calib = row.get("calibration_profile") or ""
         if calib:
             detail += f" · calibration « {calib} » tracée"
-        count = int(row.get("pair_count", 0) or 0)
-        self._set_status(f"Vidéo ajoutée - {count} prise(s) dans la session{detail}")
+        if action == "replaced":
+            self._set_status(f"Vidéo remplacée dans la prise{detail}")
+        else:
+            count = int(row.get("pair_count", 0) or 0)
+            self._set_status(f"Vidéo ajoutée - {count} prise(s) dans la session{detail}")
         self._logs.append(self._status)
+
+    @Slot(str, str)
+    def refreezePairOffset(self, left: str, right: str):
+        """Nouvelle synchro appliquée : la prise de cette paire la reprend."""
+        if not left or not right or not self._db_ok:
+            return
+        try:
+            import fish_annotate as fa
+
+            self._ensure_fv()
+            if fa.refreeze_pair_offset(left, right):
+                self.refresh()
+                if self._data is not None:
+                    # L'offset figé vient de changer : le relire au besoin.
+                    self._data._frame_offset_cached = False
+        except Exception as exc:
+            self._logs.append(f"[!] Synchro de la prise : {exc}")
 
     def _finish_pair_failed(self, msg: str):
         self._set_busy(False)
@@ -531,8 +628,7 @@ class SessionController(QObject):
         name = self.selectedName
         if not left:
             self._set_status(
-                f"« {name} » n'a pas encore de vidéos : chargez la paire puis "
-                "cliquez « Attacher la paire chargée »"
+                f"« {name} » n'a pas encore de vidéos : chargez-les dans Mesure"
             )
             return
         if not self.selectedLeftAvailable:
@@ -623,6 +719,10 @@ class SessionController(QObject):
             self._ensure_fv()
             if fa.delete_session(self.selectedId):
                 self._clear_selection()
+                self._remember_session("")
+                if self._data is not None:
+                    self._data._set_session_id("")
+                self.activeSessionChanged.emit()
                 self.refresh()
                 self._set_status("Session supprimée")
             else:
@@ -632,6 +732,44 @@ class SessionController(QObject):
         except Exception as exc:
             self._set_status(str(exc))
             self._logs.append(f"[!] Suppression session : {exc}")
+
+    @Property(list, notify=moveTargetsChanged)
+    def moveTargets(self):
+        """Sessions pouvant recevoir une prise de la session choisie."""
+        rows = (self._sessions.row_at(i) or {} for i in range(self._sessions.rowCount()))
+        return [
+            {"session_id": row.get("session_id", ""), "name": row.get("name", "")}
+            for row in rows
+            if row.get("session_id") != self.selectedId
+        ]
+
+    @Slot(int, str)
+    def movePairTo(self, pair_index: int, session_id: str):
+        """Déplace une prise de la session choisie vers `session_id`."""
+        pairs = list(self._selected.get("pairs") or [])
+        if not 0 <= int(pair_index) < len(pairs) or not session_id:
+            return
+        try:
+            import fish_annotate as fa
+
+            self._ensure_fv()
+            moved = pairs[int(pair_index)]
+            target = fa.move_media_pair(str(moved["pair_id"]), session_id)
+            if not target:
+                self._set_status("Session introuvable")
+                return
+            self.refresh()
+            loaded = self._data.mediaId if self._data is not None else ""
+            if loaded and loaded in (moved.get("left_media_id"), moved.get("right_media_id")):
+                # La session suit la vidéo chargée.
+                self._select_by_id(session_id)
+            self._set_status(
+                f"Prise {int(pair_index) + 1} déplacée vers « {target.get('name', '')} »"
+            )
+            self._logs.append(self._status)
+        except Exception as exc:
+            self._set_status(str(exc))
+            self._logs.append(f"[!] Déplacement prise : {exc}")
 
     @Slot(str)
     def setSelectedStatus(self, status: str):

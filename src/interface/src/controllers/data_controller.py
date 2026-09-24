@@ -102,8 +102,7 @@ class DataController(QObject):
     videoPathChanged = Signal()
     _observationAdded = Signal(dict)
     _observationFailed = Signal(str)
-    _sessionSaved = Signal(dict)
-    _sessionFailed = Signal(str)
+    sessionFieldsSaved = Signal()
     _measurementPersisted = Signal(dict)
     _measurementPersistFailed = Signal(dict)
     _fishialPreviewReady = Signal(dict)
@@ -238,8 +237,6 @@ class DataController(QObject):
         measure.playingChanged.connect(self._on_measure_playing_changed)
         self._observationAdded.connect(self._finish_observation_added)
         self._observationFailed.connect(self._finish_observation_failed)
-        self._sessionSaved.connect(self._finish_session_saved)
-        self._sessionFailed.connect(self._finish_session_failed)
         self._measurementPersisted.connect(self._finish_measurement_persisted)
         self._measurementPersistFailed.connect(self._finish_measurement_failed)
         self._fishialPreviewReady.connect(self._finish_fishial_preview)
@@ -667,39 +664,85 @@ class DataController(QObject):
 
     @Slot()
     def loadSessionMetadata(self):
+        """Relit le média chargé et, s'il en a une, sa session.
+
+        Une vidéo sans session ne touche ni aux champs ni à la session active :
+        c'est elle qui va la recevoir (voir SessionController).
+        """
         path = self._measure.leftVideo
         if not path or not self._db_ok:
             self._media_id = ""
-            self._set_session_id("")
             self.mediaIdChanged.emit()
+            return
+        try:
+            import fish_annotate as fa
+
+            self._ensure_fv()
+            mid = fa.resolve_media_id(path, create=False) or ""
+            self._media_id = mid
+            found = fa.find_session_for_media(mid) if mid else None
+            if found:
+                # La session de la vidéo devient la session active.
+                self._apply_session_row(found)
+            self.mediaIdChanged.emit()
+        except Exception as exc:
+            self._logs.append(f"[!] Session : {exc}")
+
+    def _apply_session_row(self, row: dict) -> None:
+        """Aligne la session courante et ses quatre champs sur `row`."""
+        self._set_session_id(str(row.get("session_id", "")))
+        self.sessionTitle = str(row.get("name", "") or "")
+        self.sessionSite = str(row.get("site", "") or "")
+        self.sessionDate = str(row.get("session_date", "") or "")[:10]
+        self.sessionNotes = str(row.get("notes", "") or "")
+
+    @Slot()
+    def saveSessionFields(self):
+        """Enregistre lieu, titre, date et notes dans la session active.
+
+        Ces champs sont recopiés sur les médias de la session : l'export
+        d'abondance les lit là.
+        """
+        if not self._session_id or not self._db_ok:
             return
         try:
             import fish_annotate as fa
             import fish_db_stats as fdb
 
             self._ensure_fv()
-            mid = fa.resolve_media_id(path, create=False)
-            if not mid:
-                self._media_id = ""
-                self._set_session_id("")
-                self.mediaIdChanged.emit()
+            if not self._site.strip() or not self._date.strip():
+                self._set_status("Lieu et date obligatoires")
+                stored = fa.get_session(self._session_id)
+                if stored:
+                    self._apply_session_row(stored)
                 return
-            meta = fdb.get_session_metadata(mid) or {}
-            self._media_id = mid
-            self.sessionSite = meta.get("site", "") or ""
-            self.sessionTitle = meta.get("session_title", "") or ""
-            self.sessionNotes = meta.get("notes", "") or ""
-            self.sessionDate = meta.get("session_date", self._date) or self._date
-            # La session (paire G/D) prime sur les metadonnees du media : c'est
-            # elle qui porte le lieu, la date et l'offset de synchro figes.
-            found = fa.find_session_for_media(mid)
-            self._set_session_id(str(found.get("session_id", "")) if found else "")
-            if found:
-                self.sessionSite = found.get("site", "") or self._site
-                self.sessionTitle = found.get("name", "") or self._title
-                self.sessionNotes = found.get("notes", "") or self._notes
-                self.sessionDate = found.get("session_date", "") or self._date
-            self.mediaIdChanged.emit()
+            row = fa.update_session(
+                self._session_id,
+                name=self._title,
+                site=self._site,
+                session_date=self._date,
+                notes=self._notes,
+            )
+            if not row:
+                return
+            self._apply_session_row(row)
+            fields = {
+                "site": self._site,
+                "session_title": self._title,
+                "notes": self._notes,
+                "session_date": self._date,
+            }
+            media_ids = {row.get("left_media_id"), row.get("right_media_id")}
+            for pair in row.get("pairs") or []:
+                media_ids.update((pair.get("left_media_id"), pair.get("right_media_id")))
+            for media_id in media_ids - {None, ""}:
+                fdb.update_session_metadata(media_id, **fields)
+            self.sessionFieldsSaved.emit()
+        except ValueError as exc:
+            self._set_status(str(exc))
+            stored = fa.get_session(self._session_id)
+            if stored:
+                self._apply_session_row(stored)
         except Exception as exc:
             self._logs.append(f"[!] Session : {exc}")
 
@@ -1432,147 +1475,6 @@ class DataController(QObject):
         if changed:
             self.refreshRegistry()
         self.selectedEventsChanged.emit()
-
-    @Slot()
-    def saveSession(self):
-        """Enregistre la session : ligne `sessions` + metadonnees sur les DEUX medias.
-
-        Le travail part dans un **thread** : l'enregistrement calcule le sha256
-        integral des deux videos (plusieurs Go a la premiere attache) et gelait
-        l'interface pendant tout ce temps. Les boutons concernes sont grises via
-        `busy` et le statut dit ce qui se passe.
-        """
-        path = self._measure.leftVideo
-        if not path:
-            self._set_status("Chargez une video d'abord")
-            return
-        if not self._site.strip():
-            self._set_status("Le lieu est obligatoire pour enregistrer la session")
-            return
-        if not self._date.strip():
-            self._set_status("La date est obligatoire pour enregistrer la session")
-            return
-        if self._busy:
-            self._set_status("Enregistrement déjà en cours…")
-            return
-        payload = {
-            "left_path": path,
-            "right_path": self._measure.rightVideo,
-            "site": self._site,
-            "title": self._title,
-            "notes": self._notes,
-            "date": self._date,
-            "session_id": self._session_id,
-            "stereo_rmse": paths.stereo_rmse_if_exists(),
-        }
-        self._set_busy(True)
-        self._set_status("Enregistrement de la paire… (empreinte des vidéos)")
-
-        def worker():
-            try:
-                self._sessionSaved.emit(self._db_save_session(payload))
-            except Exception as exc:
-                self._sessionFailed.emit(str(exc))
-
-        threading.Thread(target=worker, daemon=True).start()
-
-    def _db_save_session(self, payload: dict) -> dict:
-        """Ecriture de la session - thread d'arriere-plan, aucun appel Qt ici."""
-        import fish_annotate as fa
-        import fish_db_stats as fdb
-
-        self._ensure_fv()
-        left_path = payload["left_path"]
-        mid = fa.resolve_media_id(left_path, create=True)
-        if not mid:
-            raise RuntimeError("Echec media en base")
-
-        # L'attache enregistre les DEUX medias et rend leurs identifiants :
-        # les resoudre a nouveau ici recalculerait un sha256 de plusieurs Go
-        # pour rien.
-        session_row = self._upsert_session_row(
-            fa, left_path, payload["right_path"], payload, media_id=mid,
-        )
-
-        fields = {
-            "site": payload["site"],
-            "session_title": payload["title"],
-            "notes": payload["notes"],
-            "session_date": payload["date"],
-        }
-        ok = fdb.update_session_metadata(mid, **fields)
-        right_id = str((session_row or {}).get("right_media_id", "") or "")
-        if right_id:
-            fdb.update_session_metadata(right_id, **fields)
-        return {
-            "media_id": mid,
-            "ok": bool(ok),
-            "session_row": session_row or {},
-            "right_media_id": right_id,
-        }
-
-    def _finish_session_saved(self, result: dict):
-        self._set_busy(False)
-        self._media_id = str(result.get("media_id", "") or "")
-        self.mediaIdChanged.emit()
-        session_row = result.get("session_row") or {}
-        session_id = str(session_row.get("session_id", "") or "")
-        if session_id:
-            self._set_session_id(session_id)
-        self._frame_offset_cached = False
-        suffix = ""
-        if session_row:
-            offset = session_row.get("frame_offset")
-            suffix = (
-                " · paire enregistrée" if result.get("right_media_id")
-                else " · vidéo droite absente"
-            )
-            if offset is not None:
-                suffix += f", décalage figé à {offset:+d} img"
-            calib = session_row.get("calibration_profile") or ""
-            if calib:
-                suffix += f" · calibration « {calib} » tracée"
-        self._set_status(
-            ("Session enregistrée" + suffix) if result.get("ok")
-            else "Echec enregistrement"
-        )
-        self._logs.append(self._status)
-
-    def _finish_session_failed(self, msg: str):
-        self._set_busy(False)
-        self._set_status(msg)
-        self._logs.append(f"[!] Session : {msg}")
-
-    def _upsert_session_row(
-        self, fa, left_path: str, right_path: str, payload: dict, *, media_id: str,
-    ) -> dict | None:
-        """Cree ou met a jour la session de cette paire, et fige l'offset.
-
-        Appele depuis le thread d'ecriture : ne touche a aucun etat Qt (le
-        `session_id` retenu remonte par le signal `_sessionSaved`).
-        """
-        name = (payload["title"] or "").strip() or Path(left_path).stem
-        fields = {
-            "name": name,
-            "site": payload["site"],
-            "session_date": payload["date"],
-            "notes": payload["notes"],
-        }
-        session_id = str(payload.get("session_id") or "")
-        if not session_id:
-            existing = fa.find_session_for_media(media_id)
-            session_id = str(existing.get("session_id", "")) if existing else ""
-        if session_id:
-            fa.update_session(session_id, **fields)
-        else:
-            created = fa.create_session(**fields)
-            session_id = str(created.get("session_id", ""))
-        if not session_id:
-            return None
-        return fa.attach_media_pair(
-            session_id, left_path, right_path or "",
-            stereo_rmse=payload.get("stereo_rmse"),
-        )
 
     @Slot()
     def addObservationFromSelectedBox(self):

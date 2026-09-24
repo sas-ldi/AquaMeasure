@@ -482,14 +482,61 @@ Au lancement, l'analyse essaie d'abord la grille saisie ici. Si elle n'y voit pa
                 Layout.fillWidth: true
                 spacing: Theme.s4
 
-                // Contexte de la session en premier : on renseigne le lieu,
-                // le titre et la date avant de mesurer.
+                // Contexte de la session en premier : les champs sont ceux de
+                // la session active et s'enregistrent en quittant le champ.
                 SidePanelSection {
+                    id: sessionSection
                     title: qsTr("Session")
                     iconName: "folder"
-                    info: qsTr("Une session, c'est UNE paire de vidéos (gauche + droite) et tout ce que vous y annotez. Le lieu et la date sont obligatoires : ce sont eux qui permettent de retrouver ces observations plus tard et de les exporter. Enregistrez la session avant d'annoter : sans elle, la paire n'est pas mémorisée.")
+                    info: qsTr("Les infos s'enregistrent seules ; les vidéos ouvertes rejoignent la session active.")
                     expanded: true
                     Layout.fillWidth: true
+
+                    readonly property bool rightMissing: Measure.leftVideo.length > 0
+                                                         && Measure.rightVideo.length === 0
+
+                    // Un seul bandeau : ce qui empêche la paire chargée de
+                    // rejoindre la session active.
+                    Rectangle {
+                        objectName: "sessionBanner"
+                        Layout.fillWidth: true
+                        visible: !Sessions.hasActiveSession || sessionSection.rightMissing || Sessions.busy
+                        implicitHeight: sessionBannerCol.implicitHeight + Theme.s3 * 2
+                        radius: Theme.radiusSm
+                        color: Sessions.busy ? Theme.accentSoft : Theme.warnSoft
+                        border.width: 1
+                        border.color: Sessions.busy ? Theme.accent : Theme.warn
+
+                        ColumnLayout {
+                            id: sessionBannerCol
+                            anchors.fill: parent
+                            anchors.margins: Theme.s3
+                            spacing: Theme.s2
+
+                            AppLabel {
+                                Layout.fillWidth: true
+                                text: {
+                                    if (!Sessions.hasActiveSession)
+                                        return qsTr("Aucune session active")
+                                    if (Sessions.busy)
+                                        return qsTr("Ajout des vidéos à la session…")
+                                    return qsTr("Vidéo droite absente")
+                                }
+                                font.pixelSize: Theme.fzXs
+                                font.weight: Font.DemiBold
+                                color: Sessions.busy ? Theme.accentText : Theme.warn
+                                wrapMode: Text.WordWrap
+                            }
+
+                            PrimaryButton {
+                                Layout.fillWidth: true
+                                small: true
+                                visible: !Sessions.hasActiveSession
+                                text: qsTr("Choisir ou créer une session")
+                                onClicked: App.currentPage = 7
+                            }
+                        }
+                    }
 
                     RowLayout {
                         Layout.fillWidth: true
@@ -506,15 +553,20 @@ Au lancement, l'analyse essaie d'abord la grille saisie ici. Si elle n'y voit pa
                         }
                     }
                     AppTextField {
+                        objectName: "sessionSiteField"
                         Layout.fillWidth: true
+                        enabled: Sessions.hasActiveSession
                         text: Data.sessionSite
                         onTextEdited: Data.sessionSite = text
+                        onEditingFinished: Data.saveSessionFields()
                     }
                     AppLabel { text: qsTr("Titre"); color: Theme.textMuted; font.pixelSize: Theme.fzXs }
                     AppTextField {
                         Layout.fillWidth: true
+                        enabled: Sessions.hasActiveSession
                         text: Data.sessionTitle
                         onTextEdited: Data.sessionTitle = text
+                        onEditingFinished: Data.saveSessionFields()
                     }
                     AppLabel {
                         text: qsTr("Date (obligatoire)")
@@ -523,146 +575,41 @@ Au lancement, l'analyse essaie d'abord la grille saisie ici. Si elle n'y voit pa
                     }
                     AppTextField {
                         Layout.fillWidth: true
+                        enabled: Sessions.hasActiveSession
                         text: Data.sessionDate
                         font.family: Theme.monoFamily
                         onTextEdited: Data.sessionDate = text
+                        onEditingFinished: Data.saveSessionFields()
                     }
                     AppLabel { text: qsTr("Notes"); color: Theme.textMuted; font.pixelSize: Theme.fzXs }
                     AppTextField {
                         Layout.fillWidth: true
+                        enabled: Sessions.hasActiveSession
                         text: Data.sessionNotes
                         onTextEdited: Data.sessionNotes = text
+                        onEditingFinished: Data.saveSessionFields()
                     }
 
                     RowLayout {
                         Layout.fillWidth: true
-                        PrimaryButton {
+                        spacing: Theme.s2
+                        GhostButton {
                             Layout.fillWidth: true
-                            // L'enregistrement calcule l'empreinte des deux
-                            // vidéos (plusieurs Go la première fois) : il part
-                            // dans un thread, et le bouton le dit.
-                            text: Data.busy
-                                ? qsTr("Enregistrement…")
-                                : qsTr("Enregistrer session")
-                            requires: Data.dbAvailable
-                                      && !Data.busy
-                                      && Data.videoPath.length > 0
-                                      && Data.sessionSite.length > 0
-                                      && Data.sessionDate.length > 0
-                            disabledReason: {
-                                if (!Data.dbAvailable)
-                                    return qsTr("Base d'annotations indisponible - vérifiez l'installation de annotations.")
-                                if (Data.busy)
-                                    return qsTr("Enregistrement en cours : l'empreinte des vidéos est en train d'être calculée.")
-                                if (Data.videoPath.length === 0)
-                                    return qsTr("Chargez d'abord une vidéo (section « Vidéos » ci-dessous).")
-                                if (Data.sessionSite.length === 0)
-                                    return qsTr("Renseignez le lieu : il est obligatoire.")
-                                return qsTr("Renseignez la date de la sortie : elle est obligatoire.")
-                            }
-                            tooltipText: qsTr("Enregistre la paire de vidéos, le lieu et la date, fige le décalage de synchronisation et trace la calibration active.")
-                            onClicked: Data.saveSession()
+                            fill: true
+                            small: true
+                            visible: Sessions.hasActiveSession
+                            text: qsTr("Changer de session")
+                            tooltipText: qsTr("Ouvre la page Sessions : sorties à venir, en cours et terminées.")
+                            onClicked: App.currentPage = 7
                         }
                         GhostButton {
+                            small: true
                             text: qsTr("Dossier DB")
                             requires: Data.dbAvailable
                             disabledReason: qsTr("Base d'annotations indisponible.")
                             tooltipText: qsTr("Ouvre le dossier contenant le fichier SQLite.")
                             onClicked: Data.openDbFolder()
                         }
-                    }
-
-                    // Session active choisie dans l'onglet Sessions. Le volet
-                    // ne disait que « pas encore de session pour cette paire » :
-                    // on avait beau selectionner une session, rien ici ne le
-                    // montrait, et le geste qui manquait - attacher la paire -
-                    // n'etait proposé que sur l'autre page.
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.topMargin: Theme.s1
-                        implicitHeight: activeSessionCol.implicitHeight + Theme.s3 * 2
-                        radius: Theme.radiusSm
-                        color: Sessions.activePairLoaded
-                            ? Theme.okSoft
-                            : (Sessions.hasActiveSession ? Theme.warnSoft : "transparent")
-                        border.width: 1
-                        border.color: Sessions.activePairLoaded
-                            ? Theme.ok
-                            : (Sessions.hasActiveSession ? Theme.warn : Theme.border)
-
-                        ColumnLayout {
-                            id: activeSessionCol
-                            anchors.fill: parent
-                            anchors.margins: Theme.s3
-                            spacing: Theme.s1
-
-                            AppLabel {
-                                Layout.fillWidth: true
-                                text: Sessions.hasActiveSession
-                                    ? qsTr("Session active : %1").arg(Sessions.activeSessionName)
-                                    : qsTr("Aucune session choisie")
-                                font.pixelSize: Theme.fzXs
-                                font.weight: Font.DemiBold
-                                color: Sessions.activePairLoaded
-                                    ? Theme.ok
-                                    : (Sessions.hasActiveSession ? Theme.warn : Theme.textDim)
-                                wrapMode: Text.WordWrap
-                            }
-
-                            AppLabel {
-                                Layout.fillWidth: true
-                                visible: text.length > 0
-                                text: {
-                                    if (!Sessions.hasActiveSession)
-                                        return qsTr("Choisissez-en une dans l'onglet Sessions : c'est elle qui portera tout ce que vous annotez ici.")
-                                    if (!Sessions.activeSessionHasPair)
-                                        return qsTr("Cette session n'a aucune paire de vidéos : rien de ce que vous annotez ne lui sera rattaché tant que vous n'aurez pas attaché la paire chargée.")
-                                    if (!Sessions.activePairLoaded)
-                                        return qsTr("La paire chargée ici n'est pas celle de la session : ouvrez la session, ou attachez cette paire.")
-                                    return qsTr("La paire chargée appartient bien à cette session.")
-                                }
-                                font.pixelSize: Theme.fzXs
-                                color: Theme.textDim
-                                wrapMode: Text.WordWrap
-                            }
-
-                            PrimaryButton {
-                                Layout.fillWidth: true
-                                small: true
-                                visible: Sessions.hasActiveSession && !Sessions.activePairLoaded
-                                attention: visible && Measure.leftVideo.length > 0
-                                text: Sessions.busy
-                                    ? qsTr("Attache en cours…")
-                                    : qsTr("Attacher cette paire à « %1 »").arg(Sessions.activeSessionName)
-                                requires: !Sessions.busy && Measure.leftVideo.length > 0
-                                disabledReason: Sessions.busy
-                                    ? qsTr("Attache déjà en cours - l'empreinte des vidéos est en cours de calcul.")
-                                    : qsTr("Chargez d'abord la paire de vidéos ci-dessous.")
-                                tooltipText: qsTr("Rattache la paire chargée à la session active et fige le décalage de synchronisation.")
-                                onClicked: Sessions.attachCurrentPair()
-                            }
-                        }
-                    }
-
-                    AppLabel {
-                        Layout.fillWidth: true
-                        text: Data.sessionId.length > 0
-                            ? qsTr("Métadonnées enregistrées pour cette paire.")
-                            : qsTr("Métadonnées pas encore enregistrées pour cette paire.")
-                        font.pixelSize: Theme.fzXs
-                        color: Data.sessionId.length > 0 ? Theme.ok : Theme.textDim
-                        wrapMode: Text.WordWrap
-                    }
-
-                    GhostButton {
-                        fill: true
-                        Layout.fillWidth: true
-                        small: true
-                        text: Sessions.hasActiveSession
-                            ? qsTr("Changer de session")
-                            : qsTr("Choisir une session")
-                        tooltipText: qsTr("Ouvre la page Sessions : sorties à venir, en cours et terminées.")
-                        onClicked: App.currentPage = 7
                     }
                 }
 

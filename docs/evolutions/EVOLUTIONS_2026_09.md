@@ -1,6 +1,32 @@
 # AquaMeasure Évolutions de septembre 2026
 
-Les changements de la version du 8 septembre 2026 concernent l’espace de mesure, les annotations, les exports et la livraison. Le manuel utilisateur décrit les gestes ; cette note permet de repérer ce qui a changé.
+Cette note recense les changements des versions du 24 et du 8 septembre 2026. Le manuel utilisateur décrit les gestes ; cette note permet de repérer ce qui a changé.
+
+## Version du 24 septembre 2026
+
+Ces changements font suite à la première sortie de calibration en mer.
+
+### Mires préréglées
+
+Paramètres ChArUco propose deux mires : la petite mire A3 (5×7 cases de 49,5 mm, marqueurs de 37 mm) et la grande mire de 84 cm (20×7 cases de 39 mm, marqueurs de 29 mm), toutes deux en DICT_5X5_100. Un clic remplit colonnes, lignes, tailles et dictionnaire. Les colonnes correspondent aux cases dans la largeur du fichier imprimé ; inversées, aucun coin n'est détecté. La mire choisie est retenue au lancement suivant.
+
+### Résultat de calibration
+
+La rotation relative est détaillée en horizontal, vertical et roulis. Sur un support fixe, l'écartement des caméras se lit dans la part horizontale ; le vertical et le roulis restent proches de zéro. Comparer ces valeurs entre passages de mire indique si la calibration est stable. L'aperçu de détection ne reprend plus l'image du calcul précédent.
+
+### Synchronisation
+
+La fenêtre In/Out est enregistrée dès que la poignée est relâchée, et la calibration utilise donc la fenêtre affichée. Le bouton Enregistrer In-Out reste disponible. Une autre paire de vidéos, par exemple l'extrait d'un seul passage de mire, repart sur la vidéo entière et sans synchro. Après une poignée In/Out, la vue revient à son image : l'application ne propose plus de valider un faux décalage.
+
+### Sessions
+
+Le bouton Enregistrer session disparaît. Lieu, titre, date et notes s'enregistrent en quittant le champ. La dernière session se rouvre au démarrage ; les vidéos ouvertes la rejoignent, ou rouvrent la session qui les contient. La page Sessions permet de déplacer une prise vers une autre session avec ses mesures. Le décalage de synchro d'une prise n'est plus réécrit ; refaire la synchro le met à jour.
+
+### Installation
+
+L'édition légère, d'environ 900 Mo, contient la suite Fishial et les petits détecteurs. Les autres modèles s'ajoutent depuis l'onglet Modèles IA. Installée par-dessus une version précédente, elle conserve modèles et données.
+
+## Version du 8 septembre 2026
 
 ## Interface et fiche poisson
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -21,6 +22,7 @@ if str(APP_ROOT) not in sys.path:
     sys.path.insert(0, str(APP_ROOT))
 
 from src.controllers.app_controller import AppController  # noqa: E402
+from src.util import paths  # noqa: E402
 
 LEFT = "C:/videos/LEFT_Runcam6_0000.MP4"
 RIGHT = "C:/videos/RIGHT_Runcam6_0014.MP4"
@@ -30,6 +32,16 @@ class ActiveSessionTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = QApplication.instance() or QApplication([])
+        # selectSession() mémorise la session active : jamais dans le vrai
+        # dossier camera_parameters/.
+        cls.tmp = tempfile.TemporaryDirectory(prefix="active_session_")
+        cls._orig_dir = paths.camera_params_dir
+        paths.camera_params_dir = staticmethod(lambda: Path(cls.tmp.name))
+
+    @classmethod
+    def tearDownClass(cls):
+        paths.camera_params_dir = cls._orig_dir
+        cls.tmp.cleanup()
 
     def setUp(self):
         self.ctrl = AppController()

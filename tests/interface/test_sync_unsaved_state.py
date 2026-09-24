@@ -60,36 +60,78 @@ class SyncUnsavedStateTest(unittest.TestCase):
     def test_trim_intact_n_alerte_pas(self):
         self.assertFalse(self.sync.trimDirty)
 
-    def test_bouger_une_poignee_leve_l_alerte(self):
-        self.sync.setLeftIn(120)
-        self.assertTrue(self.sync.trimDirty)
+    def test_glisser_une_poignee_n_ecrit_qu_au_repos(self):
+        for f in range(100, 121):
+            self.sync.setLeftIn(f)
+        self.assertFalse((self.cam / "trim_frames.npy").exists())
+        self.assertTrue(self.sync._trim_timer.isActive())
 
-    def test_enregistrer_eteint_l_alerte(self):
+    def test_la_fenetre_est_enregistree_au_repos(self):
+        # La calibration ne lit que le fichier : ce qu'on voit doit y etre.
         self.sync.setLeftIn(120)
         self.sync.setRightOut(500)
-        self.assertTrue(self.sync.trimDirty)
-        self.sync.saveTrim()
+        self.sync._trim_timer.timeout.emit()
         self.assertFalse(self.sync.trimDirty)
+        saved = list(np.load(self.cam / "trim_frames.npy"))
+        self.assertEqual(saved, [120, 599, 0, 500])
+
+    def test_passer_a_la_calibration_ecrit_la_fenetre_en_attente(self):
+        self.sync.setLeftIn(120)
+        self.sync.saveCurrentVideos()
         self.assertTrue((self.cam / "trim_frames.npy").is_file())
+        self.assertFalse(self.sync._trim_timer.isActive())
 
-    def test_rebouger_apres_enregistrement_realerte(self):
+    def test_sans_videos_chargees_rien_n_est_ecrit(self):
+        self.sync._left_fc = 0
         self.sync.setLeftIn(120)
-        self.sync.saveTrim()
-        self.sync.setLeftIn(130)
-        self.assertTrue(self.sync.trimDirty)
+        self.sync._flush_trim()
+        self.assertFalse((self.cam / "trim_frames.npy").exists())
 
-    def test_revenir_aux_valeurs_enregistrees_eteint_l_alerte(self):
-        self.sync.setLeftIn(120)
-        self.sync.saveTrim()
-        self.sync.setLeftIn(130)
-        self.sync.setLeftIn(120)
-        self.assertFalse(self.sync.trimDirty)
+    def _paire_precedente(self, left, right):
+        (self.cam / "videos.txt").write_text(f"{left}\n{right}\n", encoding="utf-8")
+        np.save(self.cam / "trim_frames.npy", np.array([20000, 25000, 20010, 25010]))
+        np.save(self.cam / "sync_frames.npy", np.array([150, 160]))
 
-    def test_le_signal_trim_est_emis(self):
-        seen = []
-        self.sync.trimDirtyChanged.connect(lambda: seen.append(1))
-        self.sync.setLeftIn(120)
-        self.assertTrue(seen, "trimDirtyChanged jamais emis")
+    def test_nouvelle_paire_repart_de_la_video_entiere(self):
+        # Extrait d'un seul passage de mire : la fenetre et la synchro de la
+        # longue video precedente ne s'appliquent pas.
+        self._paire_precedente("C:/v/longue_G.mp4", "C:/v/longue_D.mp4")
+        self.sync._left, self.sync._right = "C:/v/passage2_G.mp4", "C:/v/passage2_D.mp4"
+        self.sync._load_persisted_trim()
+        self.assertEqual(list(np.load(self.cam / "trim_frames.npy")), [0, 599, 0, 599])
+        self.assertFalse((self.cam / "sync_frames.npy").exists())
+        self.assertEqual(self.sync.syncOffset, 0)
+
+    def test_changer_seulement_la_gauche_repart_de_la_video_entiere(self):
+        import cv2
+        from unittest.mock import patch
+
+        new_left = Path(self.tmp.name) / "autre_G.mp4"
+        writer = cv2.VideoWriter(str(new_left), cv2.VideoWriter_fourcc(*"mp4v"), 30.0, (64, 48))
+        for _ in range(12):
+            writer.write(np.zeros((48, 64, 3), dtype=np.uint8))
+        writer.release()
+        self._paire_precedente("C:/v/p_G.mp4", "C:/v/p_D.mp4")
+        self.sync._left, self.sync._right = "C:/v/p_G.mp4", "C:/v/p_D.mp4"
+        self.sync._right_in, self.sync._right_out = 20010, 25010
+        with patch(
+            "src.controllers.sync_controller.QFileDialog.getOpenFileName",
+            return_value=(str(new_left), ""),
+        ):
+            self.sync.pickLeftVideo()
+        self.assertFalse((self.cam / "sync_frames.npy").exists())
+        self.assertEqual(
+            list(np.load(self.cam / "trim_frames.npy")),
+            [0, self.sync._left_fc - 1, 0, 599],
+        )
+
+    def test_meme_paire_garde_fenetre_et_synchro(self):
+        self._paire_precedente("C:/v/p_G.mp4", "C:/v/p_D.mp4")
+        np.save(self.cam / "trim_frames.npy", np.array([100, 500, 110, 510]))
+        self.sync._left, self.sync._right = "C:/v/p_G.mp4", "C:/v/p_D.mp4"
+        self.sync._load_persisted_trim()
+        self.assertEqual(self.sync._current_trim(), (100, 500, 110, 510))
+        self.assertTrue((self.cam / "sync_frames.npy").is_file())
 
     # ── Décalage de synchronisation ──────────────────────────────────
 

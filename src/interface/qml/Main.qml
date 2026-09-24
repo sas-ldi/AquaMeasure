@@ -287,24 +287,6 @@ ApplicationWindow {
                 visible: App.currentPage === 4
             }
             AMMenuItem {
-                // Le lieu et la date sont exigés à l'écriture : le dire ici
-                // évite un clic qui échoue sans que l'on sache pourquoi.
-                text: Data.busy
-                    ? qsTr("Enregistrement de la session en cours…")
-                    : (Data.sessionSite.length > 0 && Data.sessionDate.length > 0
-                        ? qsTr("Enregistrer la session en base")
-                        : qsTr("Enregistrer la session (renseignez lieu et date)"))
-                enabled: Data.dbAvailable
-                         && !Data.busy
-                         && Data.sessionSite.length > 0
-                         && Data.sessionDate.length > 0
-                visible: App.currentPage === 4
-                onTriggered: Data.saveSession()
-            }
-            AMMenuSeparator {
-                visible: App.currentPage === 4
-            }
-            AMMenuItem {
                 visible: App.currentPage === 3
                 action: Action {
                     text: qsTr("Enregistrer une copie de la calibration…")
